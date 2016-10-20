@@ -81,11 +81,19 @@ var BioWatchManager = function () {
       }).then(function (defaultSettings) {
         if (defaultSettings) {
           console.log('db file does not exist');
-          Promise.resolve().then(function () {
-            return _this.bioSignalDatabase.destroy();
+
+          return Promise.resolve().then(function () {
+            console.log('destroy');
+            return Promise.resolve().then(function () {
+              _this.bioSignalDatabase.destroy();
+            });
           }).then(function () {
-            return _this.bioSignalDatabase.init();
+            console.log('init');
+            return Promise.resolve().then(function () {
+              return _this.bioSignalDatabase.init();
+            });
           }).then(function () {
+            console.log('input defaults');
             var rooms = defaultSettings.rooms;
             var bioWatches = defaultSettings.bioWatches;
 
@@ -197,7 +205,7 @@ var BioWatchManager = function () {
                     if (err) {
                       reject(err);
                     }
-
+                    console.log('write');
                     resolve();
                   });
                 });

@@ -212,8 +212,9 @@ class BioSignalDatabase {
     return new Promise ((resolve, reject) => {
       fs.unlink (this.fileName, (err) => {
         if (err) {
-          reject (err);
-        }
+          //reject (err);
+        } 
+
         console.log ('Destroy database successfully.');
         resolve ();
       });

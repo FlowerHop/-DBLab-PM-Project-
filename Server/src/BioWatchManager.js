@@ -70,14 +70,22 @@ class BioWatchManager {
     .then ((defaultSettings) => {
       if (defaultSettings) {
         console.log ('db file does not exist');
-        Promise.resolve ()
+
+        return Promise.resolve ()
         .then (() => {
-          return this.bioSignalDatabase.destroy ();
+          console.log ('destroy');
+          return Promise.resolve ().then (() => {
+              this.bioSignalDatabase.destroy ();
+          });
         })
         .then (() => {
-          return this.bioSignalDatabase.init ();
+          console.log ('init');
+          return Promise.resolve ().then (() => {
+              return this.bioSignalDatabase.init ();  
+          });
         })
         .then (() => {
+          console.log ('input defaults');
           let rooms = defaultSettings.rooms;
           let bioWatches = defaultSettings.bioWatches;
     
@@ -197,7 +205,7 @@ class BioWatchManager {
               if (err) {
                 reject (err);
               }
-
+              console.log ('write');
               resolve();
             });
           });

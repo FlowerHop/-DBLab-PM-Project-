@@ -261,8 +261,9 @@ var BioSignalDatabase = function () {
       return new Promise(function (resolve, reject) {
         fs.unlink(_this13.fileName, function (err) {
           if (err) {
-            reject(err);
+            //reject (err);
           }
+
           console.log('Destroy database successfully.');
           resolve();
         });
