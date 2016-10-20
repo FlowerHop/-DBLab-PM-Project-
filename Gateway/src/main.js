@@ -10,33 +10,33 @@ const SerialPort = require ('serialport').SerialPort;
 const xbee_api = require ('xbee-api');
 
 const C = xbee_api.constants;
-const COM_NUM = "COM19";
+const COM_NUM = "/dev/cu.usbserial-A403MPU4";
 const BAUDRATE = 9600;
 
 const xbeeAPI = new xbee_api.XBeeAPI ({
 	api_mode: 1
 });
 
-const IP = "http://220.134.136.69";
+const IP = "http://140.115.51.30";
 const PORT = "1338";
 const POST_API = "/api/patient_status";
 
 const IN_PLACE = process.argv[2];
 
-// const serialport = new SerialPort (COM_NUM, {
-//     baudrate: BAUDRATE, 
-//     parser: xbeeAPI.rawParser ()
-// });
+const serialport = new SerialPort (COM_NUM, {
+    baudrate: BAUDRATE, 
+    parser: xbeeAPI.rawParser ()
+});
 
-// serialport.on ("open", () => {
-//     var frame_obj = {
-//     	type: C.FRAME_TYPE.AT_COMMAND,
-//     	command: "NI",
-//     	commandParameter: []
-//     };
+serialport.on ("open", () => {
+    var frame_obj = {
+    	type: C.FRAME_TYPE.AT_COMMAND,
+    	command: "NI",
+    	commandParameter: []
+    };
 
-//     serialport.write (xbeeAPI.buildFrame (frame_obj));
-// });
+    serialport.write (xbeeAPI.buildFrame (frame_obj));
+});
 
 xbeeAPI.on ("frame_object", (frame) => {
 	console.log (">>", frame);
@@ -71,7 +71,7 @@ xbeeAPI.on ("frame_object", (frame) => {
 	    if (error) {
 	      reject (error);
 	    }
-	    res.send (response.body.toString ());
+	    // res.send (response.body.toString ());
 	    resolve ();
 	  });
 	}).catch ((error) => {
