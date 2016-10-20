@@ -10,7 +10,7 @@ const SerialPort = require ('serialport').SerialPort;
 const xbee_api = require ('xbee-api');
 
 const C = xbee_api.constants;
-const COM_NUM = "/dev/cu.usbserial-A403MPU4";
+const COM_NUM = "/dev/cu.usbserial-A403MPU4"; // mac usb
 const BAUDRATE = 9600;
 
 const xbeeAPI = new xbee_api.XBeeAPI ({
@@ -40,17 +40,16 @@ serialport.on ("open", () => {
 
 xbeeAPI.on ("frame_object", (frame) => {
 	console.log (">>", frame);
-
+    
 	var inPlace = IN_PLACE;
-    var bioWatchId = frame.data;
-    var pulse = frame.data;
     var rssi = frame.rssi;
     var dateAndTime = new Date ().getTime ();
+    var signal = packageAnalyzer (frame);
 	
 	var bioWatchSignal = {
 	  inPlace: inPlace,
-	  bioWatchId: bioWatchId,
-	  pulse: pulse,
+	  bioWatchId: signal.bioWatchId,
+	  pulse: signal.pulse,
 	  rssi: rssi,
 	  dateAndTime: dateAndTime
 	};
@@ -80,4 +79,14 @@ xbeeAPI.on ("frame_object", (frame) => {
 	  res.end ();
 	});
 });
+
+var packageAnalyzer = (data) => {
+  var bioWatchId = data.toString ('utf-8', 0, 2);
+  var pulse = frame.data.readUIntBE (2, 1);
+
+  return {
+  	bioWatchId: bioWatchId, 
+  	pulse: pulse
+  };
+};
 
