@@ -1,0 +1,81 @@
+body {
+  background-color: #083D77;
+  margin-left: 0;
+  margin-right: 0;
+}
+
+body h1 {
+  color: #F8FFF4;
+  text-align: left;
+  height: 60px;
+  line-height: 60px;
+  margin-left: 25px;
+}
+
+
+
+.recordBox {
+  
+  text-align: center;
+  font-size: 40px;
+  background-color: #F8FFF4;
+}
+
+.placeList {
+  margin-left: 200px;
+  margin-right: 200px;
+  font-size: 30px;
+  text-align: left;
+  padding-top: 20px;
+  padding-bottom: 20px;
+}
+
+.place {
+  min-height: 150px;
+  margin-top: 20px;
+  margin-bottom: 10px;
+  padding-top: 1px;
+  padding-bottom: 1px;
+  padding-left: 30px;
+  padding-right: 30px;
+  border-radius: 15px;
+  color: white;
+  background-color: #083D77; 
+}
+
+.place p {
+  font-weight: bold;
+}
+
+
+.bioWatchList {
+  margin-bottom: 30px;
+  padding-top: 10px;
+  padding-bottom: 10px;	
+  min-height: 30px;
+  border-radius: 15px;
+  background-color: #F8FFF4;
+}
+
+.bioWatch {
+  margin-left: 40px;
+  margin-right: 40px;
+  background-color: #C2948A;
+  border-radius: 15px;
+}
+
+.bioWatch h4 {
+  padding-top: 30px;
+  padding-left: 30px; 
+  font-weight: bold;
+  font-size: 30px;
+}
+
+.bioWatch p{
+  padding-top: 20px;
+  padding-bottom: 30px;
+  padding-right: 30px; 
+  text-align: right;
+  font-weight: normal;
+  font-size: 25px;
+}

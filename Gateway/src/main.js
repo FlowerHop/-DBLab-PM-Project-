@@ -19,7 +19,7 @@ const xbeeAPI = new xbee_api.XBeeAPI ({
 
 const IP = "http://140.115.51.30";
 const PORT = "1338";
-const POST_API = "/api/patient_status";
+const POST_API = "/api/patients_status";
 
 const IN_PLACE = process.argv[2];
 
@@ -35,7 +35,7 @@ serialport.on ("open", () => {
     	commandParameter: []
     };
 
-    serialport.write (xbeeAPI.buildFrame (frame_obj));
+    // serialport.write (xbeeAPI.buildFrame (frame_obj));
 });
 
 xbeeAPI.on ("frame_object", (frame) => {
@@ -44,7 +44,7 @@ xbeeAPI.on ("frame_object", (frame) => {
 	var inPlace = IN_PLACE;
     var rssi = frame.rssi;
     var dateAndTime = new Date ().getTime ();
-    var signal = packageAnalyzer (frame);
+    var signal = packageAnalyzer (frame.data);
 	
 	var bioWatchSignal = {
 	  inPlace: inPlace,
@@ -53,7 +53,7 @@ xbeeAPI.on ("frame_object", (frame) => {
 	  rssi: rssi,
 	  dateAndTime: dateAndTime
 	};
-	
+	console.log (bioWatchSignal);
 	var options = {
 	  // IP:port/api/
 	  url: IP + ':' + PORT + POST_API,
@@ -82,7 +82,7 @@ xbeeAPI.on ("frame_object", (frame) => {
 
 var packageAnalyzer = (data) => {
   var bioWatchId = data.toString ('utf-8', 0, 2);
-  var pulse = frame.data.readUIntBE (2, 1);
+  var pulse = data.readUIntBE (2, 1);
 
   return {
   	bioWatchId: bioWatchId, 
