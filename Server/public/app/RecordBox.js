@@ -20,7 +20,10 @@ export default React.createClass ({
   },
   componentDidMount: function () {
   	this.loadingDataFromServer ();
-  	setInterval (this.loadingDataFromServer, this.props.pollInterval);
+  	this.loadingInterval = setInterval (this.loadingDataFromServer, this.props.pollInterval);
+  },
+  componentWillUnmount: function () {
+    clearInterval (this.loadingInterval);
   },
   render: function () {
   	return (
