@@ -1,81 +1,100 @@
 import React from 'react';
 import $ from 'jquery';
 
-export default React.createClass ({
-  loadingDataFromServer: function () {
-  	$.ajax ({
-      url: this.props.url,
-      dataType: 'json',
-      cache: false,
-      success: function (data) {
-      	this.setState ({data: data});
-      }.bind (this),
-      error: function (xhr, status, err) {
-        console.error (this.props.url, status, err.toString ());
-      }.bind (this)
-  	}); 
-  },
-  getInitialState: function () {
-  	return {data: []};
-  },
-  componentDidMount: function () {
-  	this.loadingDataFromServer ();
-  	this.loadingInterval = setInterval (this.loadingDataFromServer, this.props.pollInterval);
-  },
-  componentWillUnmount: function () {
-    clearInterval (this.loadingInterval);
-  },
-  render: function () {
-  	return (
-      <div className="recordBox">
-        <PlaceList data={this.state.data}/>
-      </div>
-  	);
-  }	
-});
+export default class RecordBox extends React.Component {
+    constructor (props) {
+      super (props);
+      this.state = {
+        data: [],
+      };
+      this.loadingDataFromServer = this.loadingDataFromServer.bind (this);
+    }
 
-var PlaceList = React.createClass ({
-  render: function () {
-    return (
-      <div className="placeList">
-        {this.props.data.map (function (data, index) {
-           return <Place key={index} place={data}/>;
-        })}
-      </div>
-    );
-  } 
-});
+    loadingDataFromServer () {
+      $.ajax ({
+        url: this.props.url,
+        dataType: 'json',
+        cache: false,
+        success: function (data) {
+          this.setState ({data: data});
+        }.bind (this),
+        error: function (xhr, status, err) {
+          console.error (this.props.url, status, err.toString ());
+        }.bind (this)
+      }); 
+    }
 
-var Place = React.createClass ({
-  render: function () {
-    return (
-      <div className="place">
+    componentDidMount () {
+      this.loadingDataFromServer ();
+      this.loadingInterval = setInterval (this.loadingDataFromServer, this.props.pollInterval);
+    }
+
+    componentWillUnmount () {
+      clearInterval (this.loadingInterval);
+    }
+    render () {
+      return (
+        <div className="recordBox">
+          <PlaceList data={this.state.data}/>
+        </div>
+      );
+    }
+}
+
+class PlaceList extends React.Component {
+    constructor (props) {
+      super (props);
+    }
+    render() {
+      return (
+        <div className="placeList">
+          {this.props.data.map (function (data, index) {
+             return <Place key={index} place={data}/>;
+          })}
+        </div>
+      );
+    }
+}
+
+class Place extends React.Component {
+    constructor (props) {
+      super (props);
+    }
+    render() {
+      return (
+        <div className="place">
         <p>{this.props.place.inPlace}</p>
         <BioWatchList devices={this.props.place.devices}/>
       </div>
-    );
-  }
-});
+      );
+    }
+}
 
-var BioWatchList = React.createClass ({
-  render: function () {
-    return (
-      <div className='bioWatchList'>
-        {this.props.devices.map (function (device, index) {
-           return <BioWatch key={index} bioSignal={device}/>;
-        })}
-      </div>
-    );
-  }
-});
+class BioWatchList extends React.Component {
+    constructor (props) {
+      super (props);
+    }
+    render() {
+      return (
+        <div className='bioWatchList'>
+          {this.props.devices.map (function (device, index) {
+             return <BioWatch key={index} bioSignal={device}/>;
+          })}
+        </div>
+      );
+    }
+}
 
-var BioWatch = React.createClass ({
-  render: function () {
-  	return (
-  	  <div className='bioWatch'>
-  	    <h4>{this.props.bioSignal.device_id}</h4>
-  	    <p>Pulse: {this.props.bioSignal.pulse}</p>
-      </div>
-  	);
-  }
-});
+class BioWatch extends React.Component {
+    constructor (props) {
+      super (props);
+    }
+    render() {
+      return (
+        <div className='bioWatch'>
+          <h4>{this.props.bioSignal.device_id}</h4>
+          <p>Pulse: {this.props.bioSignal.pulse}</p>
+        </div>
+      );
+    }
+}

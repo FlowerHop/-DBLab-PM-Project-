@@ -27,6 +27,7 @@ class App extends Component {
   }
 
   render() {
+    // Tabs.setUseDefaultStyles(false); // default styles
     return (
       // {
       //   <Tabs/> is a composite component and acts as the main container.
@@ -63,8 +64,9 @@ class App extends Component {
           */}
 
           <Tab>Home</Tab>
-          <Tab>Bar</Tab>
-          <Tab>Baz</Tab>
+          <Tab>Patients</Tab>
+          <Tab>Health Providers</Tab>
+          <Tab>Devices Management</Tab>
         </TabList>
 
         {/*
