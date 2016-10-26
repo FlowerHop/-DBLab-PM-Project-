@@ -407,6 +407,13 @@ var BioWatchManager = function () {
         console.log('Error: ' + err);
       });
     }
+  }, {
+    key: 'getBioSignalsFromBioWatchAtTimePeriod',
+    value: function getBioSignalsFromBioWatchAtTimePeriod(device_id, startDateAndTime, endDateAndTime) {
+      return this.bioSignalDatabase.getBioSignalsFromBioWatchAtTimePeriod(device_id, startDateAndTime, endDateAndTime).catch(function (err) {
+        console.log('Error: ' + err);
+      });
+    }
   }]);
 
   return BioWatchManager;

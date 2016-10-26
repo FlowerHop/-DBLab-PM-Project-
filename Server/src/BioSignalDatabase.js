@@ -143,7 +143,7 @@ class BioSignalDatabase {
     });
   }
 
-  getBioSignalAtTime (device_id, dateAndTime) {
+  getBioSignalFromBioWatchAtTime (device_id, dateAndTime) {
     return new Promise ((resolve, reject) => {
       this.db.all ("SELECT place_id, pulse, rssi FROM " + this.bioWatchInPlaceTable + " WHERE device_id = ? AND dateAndTime = ?", [device_id, dateAndTime], (err, rows) => {
         if (err) {
@@ -151,6 +151,25 @@ class BioSignalDatabase {
         }
 
         resolve ({ place_id: rows[0].place_id, pulse: rows[0].pulse, rssi: rows[0].rssi });
+      });
+    });
+  }
+
+  getBioSignalsFromBioWatchAtTimePeriod (device_id, startDateAndTime, endDateAndTime) {
+    return new Promise ((resolve, reject) => {
+      var bioSignals = [];
+
+      this.db.all ("SELECT place_id, pulse, rssi, dateAndTime FROM " + this.bioWatchInPlaceTable + " WHERE device_id = ? AND dateAndTime >= ? AND dateAndTime <= ?", [device_id, startDateAndTime, endDateAndTime], (err, rows) => {
+      //this.db.all ("SELECT pulse, dateAndTime FROM " + this.bioWatchInPlaceTable + " WHERE device_id = ? AND dateAndTime >= ? AND dateAndTime <= ?", [device_id, startDateAndTime, endDateAndTime], (err, rows) => {
+        if (err) {
+          reject (err);
+        }
+        
+        rows.forEach ((row) => {
+          bioSignals.push (row);
+        });
+         
+        resolve (bioSignals);
       });
     });
   }

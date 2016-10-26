@@ -12,6 +12,12 @@ body h1 {
   margin-left: 25px;
 }
 
+.patientBox {
+  text-align: center;
+  font-size: 40px;
+  background-color: #F8FFF4;
+}
+
 .recordBox {
   text-align: center;
   font-size: 40px;

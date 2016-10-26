@@ -146,6 +146,20 @@ app.post('/api/scanedResult', function (req, res) {
   });
 });
 
+app.get('/api/bioSignals/:bioWatchID/:startTime/:endTime', function (req, res) {
+  var bioWatchID = req.params.bioWatchID;
+  var startTime = req.params.startTime;
+  var endTime = req.params.endTime;
+
+  Promise.resolve().then(function () {
+    return bioWatchManager.getBioSignalsFromBioWatchAtTimePeriod(bioWatchID, startTime, endTime);
+  }).then(function (bioSignals) {
+    res.json(JSON.stringify(bioSignals));
+  }).then(function () {
+    res.end();
+  });
+});
+
 app.get('/api/bioWatchList', function (req, res) {
   Promise.resolve().then(function () {
     return bioWatchManager.getBioWatchList();

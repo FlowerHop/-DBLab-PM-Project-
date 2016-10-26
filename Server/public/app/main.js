@@ -1,6 +1,7 @@
 // import React from 'react';
 // import ReactDOM from 'react-dom';
 import RecordBox from './RecordBox.js';
+import PatientBox from './PatientBox.js';
 
 // class App extends React.Component {
 //   constructor (props) {
@@ -44,7 +45,7 @@ class App extends Component {
 
       // }
 
-      <Tabs onSelect={this.handleSelect} selectedIndex={2}>
+      <Tabs onSelect={this.handleSelect} selectedIndex={1}>
 
         {/*
           <TabList/> is a composit component and is the container for the <Tab/>s.
@@ -87,7 +88,7 @@ class App extends Component {
           </RecordBox>
         </TabPanel>
         <TabPanel>
-          <h2>Hello from Bar</h2>
+          <PatientBox/>
         </TabPanel>
         <TabPanel>
           <h2>Hello from Baz</h2>

@@ -400,6 +400,13 @@ class BioWatchManager {
       console.log ('Error: ' + err);
     });
   }
+
+  getBioSignalsFromBioWatchAtTimePeriod (device_id, startDateAndTime, endDateAndTime) {
+    return this.bioSignalDatabase.getBioSignalsFromBioWatchAtTimePeriod (device_id, startDateAndTime, endDateAndTime)
+    .catch ((err) => {
+      console.log ('Error: ' + err);
+    });
+  }
 }
 
 

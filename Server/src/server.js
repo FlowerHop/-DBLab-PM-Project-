@@ -154,6 +154,24 @@ app.post ('/api/scanedResult', (req, res) => {
   });
 });
 
+app.get ('/api/bioSignals/:bioWatchID/:startTime/:endTime', (req, res) => {
+  let bioWatchID = req.params.bioWatchID;
+  let startTime = req.params.startTime;
+  let endTime = req.params.endTime;
+
+  Promise.resolve ()
+  .then (() => {
+    return bioWatchManager.getBioSignalsFromBioWatchAtTimePeriod (bioWatchID, startTime, endTime);
+  })
+  .then ((bioSignals) => {
+    res.json (JSON.stringify (bioSignals));
+  })
+  .then (() => {
+    res.end ();
+  });
+
+});
+
 app.get ('/api/bioWatchList', (req, res) => {
   Promise.resolve ()
   .then (() => {
