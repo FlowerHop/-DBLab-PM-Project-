@@ -12,6 +12,10 @@ body h1 {
   margin-left: 25px;
 }
 
+.ReactTabs {
+  text-align: right;
+}
+
 .patientBox {
   text-align: center;
   font-size: 40px;
@@ -54,7 +58,7 @@ body h1 {
 .bioWatchList {
   margin-bottom: 30px;
   padding-top: 10px;
-  padding-bottom: 10px;	
+  padding-bottom: 10px; 
   min-height: 30px;
   border-radius: 15px;
   background-color: #F8FFF4;
@@ -81,4 +85,14 @@ body h1 {
   text-align: right;
   font-weight: normal;
   font-size: 25px;
+}
+
+.axis--x path {
+  display: none;
+}
+
+.line {
+  fill: none;
+  stroke: steelblue;
+  stroke-width: 1.5px;
 }

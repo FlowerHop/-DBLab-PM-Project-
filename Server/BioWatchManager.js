@@ -8,6 +8,8 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 
 // Main Control from Server to BioSignalDatabase
 // maintain criteria setting, patients status and operation of the BioSignalDatabase
+var Patient = require('./Patient');
+
 var BioWatchManager = function () {
   function BioWatchManager() {
     _classCallCheck(this, BioWatchManager);
@@ -20,6 +22,7 @@ var BioWatchManager = function () {
     this.DATABASE_FILE_PATH = path.join(__dirname, this.DATABASE_FILE_NAME);
     this.bioWatchList = [];
     this.bioSignalDatabase = new (require('./BioSignalDatabase'))(this.DATABASE_FILE_NAME);
+    this.patients = [];
   }
 
   _createClass(BioWatchManager, [{
@@ -93,7 +96,6 @@ var BioWatchManager = function () {
               return _this.bioSignalDatabase.init();
             });
           }).then(function () {
-            console.log('input defaults');
             var rooms = defaultSettings.rooms;
             var bioWatches = defaultSettings.bioWatches;
 
@@ -115,6 +117,11 @@ var BioWatchManager = function () {
             for (var _i = 0; _i < bioWatches.length; _i++) {
               var bioWatch = bioWatches[_i];
               None.devices.push({ device_id: bioWatch, rssi: 0, pulse: 0 });
+            }
+
+            for (var _i2 = 0; _i2 < bioWatches.length; _i2++) {
+              var _bioWatch = bioWatches[_i2];
+              _this.patients.push(new Patient(_bioWatch, _bioWatch));
             }
 
             initial_status.push(None);
@@ -147,12 +154,16 @@ var BioWatchManager = function () {
                   None.devices.push({ device_id: bioWatchList[id], pulse: 0, rssi: 0, dateAndTime: 0 });
                 }
 
+                for (var _id in bioWatchList) {
+                  _this.patients.push(new Patient(bioWatchList[_id], bioWatchList[_id]));
+                }
+
                 initial_status.push(None);
 
                 var promiseArray = [];
 
-                for (var _id in bioWatchList) {
-                  promiseArray.push(_this.bioSignalDatabase.getBioSignalsFromBioWatch(bioWatchList[_id]));
+                for (var _id2 in bioWatchList) {
+                  promiseArray.push(_this.bioSignalDatabase.getBioSignalsFromBioWatch(bioWatchList[_id2]));
                 }
 
                 return Promise.all(promiseArray);
@@ -256,6 +267,13 @@ var BioWatchManager = function () {
     value: function updateStatus(bioInfo) {
       var _this3 = this;
 
+      for (var i in patients) {
+        var patient = patients[i];
+        if (patient.getBioWatchID == bioInfo.device_id) {
+          patient.inputPulse(bioInfo.pulse, bioInfo.dateAndTime);
+          break;
+        }
+      }
       return new Promise(function (resolve, reject) {
         _this3.fs.readFile(_this3.PATIENTS_STATUS_FILE_PATH, function (err, data) {
           if (err) {
@@ -273,12 +291,12 @@ var BioWatchManager = function () {
           // find the place of this bio watch
           var lastPlace = -1;
 
-          for (var i in patients_status) {
-            var devices = patients_status[i].devices;
+          for (var _i3 in patients_status) {
+            var devices = patients_status[_i3].devices;
             for (var j in devices) {
               // find the bio watch whether exist
               if (devices[j].device_id === device_id) {
-                lastPlace = i;
+                lastPlace = _i3;
                 // in the same place
                 if (patients_status[lastPlace].inPlace === place_id) {
                   devices[j].pulse = pulse;
@@ -413,6 +431,11 @@ var BioWatchManager = function () {
       return this.bioSignalDatabase.getBioSignalsFromBioWatchAtTimePeriod(device_id, startDateAndTime, endDateAndTime).catch(function (err) {
         console.log('Error: ' + err);
       });
+    }
+  }, {
+    key: 'getPatients',
+    value: function getPatients() {
+      return this.patients;
     }
   }]);
 

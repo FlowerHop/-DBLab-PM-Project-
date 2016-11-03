@@ -154,6 +154,24 @@ class BioSignalDatabase {
       });
     });
   }
+ 
+  getBioSignalsFromBioWatchAtStartTime (device_id, startDateAndTime) {
+    return new Promise ((resolve, reject) => {
+      var bioSignals = [];
+  
+      this.db.all ("SELECT place_id, pulse, rssi, dateAndTime FROM " + this.bioWatchInPlaceTable + " WHERE device_id = ? AND dateAndTime >= ?", [device_id, startDateAndTime], (err, rows) => {
+        if (err) {
+          reject (err);
+        }
+        
+        rows.forEach ((row) => {
+          bioSignals.push (row);
+        });
+         
+        resolve (bioSignals);
+      });
+    });
+  }
 
   getBioSignalsFromBioWatchAtTimePeriod (device_id, startDateAndTime, endDateAndTime) {
     return new Promise ((resolve, reject) => {

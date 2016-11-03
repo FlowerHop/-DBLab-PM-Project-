@@ -1,5 +1,7 @@
 // Main Control from Server to BioSignalDatabase
 // maintain criteria setting, patients status and operation of the BioSignalDatabase
+let Patient = require ('./Patient');
+
 class BioWatchManager {
   constructor () {
     var path = require ('path');
@@ -10,6 +12,7 @@ class BioWatchManager {
     this.DATABASE_FILE_PATH = path.join (__dirname, this.DATABASE_FILE_NAME);
     this.bioWatchList = [];
     this.bioSignalDatabase = new (require ('./BioSignalDatabase')) (this.DATABASE_FILE_NAME);
+    this.patients = [];
   }
   init () {
     return new Promise ((resolve, reject) => {
@@ -85,7 +88,6 @@ class BioWatchManager {
           });
         })
         .then (() => {
-          console.log ('input defaults');
           let rooms = defaultSettings.rooms;
           let bioWatches = defaultSettings.bioWatches;
     
@@ -107,6 +109,11 @@ class BioWatchManager {
           for (let i = 0; i < bioWatches.length; i++) {
             let bioWatch = bioWatches[i];
             None.devices.push ({device_id: bioWatch, rssi: 0, pulse: 0});
+          }
+
+          for (let i = 0; i < bioWatches.length; i++) {
+            let bioWatch = bioWatches[i];
+            this.patients.push (new Patient (bioWatch, bioWatch));
           }
       
           initial_status.push (None);
@@ -139,6 +146,10 @@ class BioWatchManager {
           let None = {inPlace: 'None', devices: []};
           for (let id in bioWatchList) {
             None.devices.push ({device_id: bioWatchList[id], pulse: 0, rssi: 0, dateAndTime: 0});
+          }
+
+          for (let id in bioWatchList) {
+            this.patients.push (new Patient (bioWatchList[id], bioWatchList[id]));
           }
 
           initial_status.push (None);
@@ -249,6 +260,13 @@ class BioWatchManager {
   }
 
   updateStatus (bioInfo) {
+    for (let i in patients) {
+      let patient = patients[i];
+      if (patient.getBioWatchID == bioInfo.device_id) {
+        patient.inputPulse (bioInfo.pulse, bioInfo.dateAndTime);
+        break;
+      }
+    }
     return new Promise ((resolve, reject) => {
       this.fs.readFile (this.PATIENTS_STATUS_FILE_PATH, (err, data) => {
         if (err) {
@@ -407,7 +425,13 @@ class BioWatchManager {
       console.log ('Error: ' + err);
     });
   }
+
+  getPatients () {
+    return this.patients;
+  }
 }
+
+
 
 
 // var BioWatchManager = function () {

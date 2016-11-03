@@ -48,7 +48,7 @@ class PlaceList extends React.Component {
     render() {
       return (
         <div className="placeList">
-          {this.props.data.map (function (data, index) {
+          {this.props.data.map ((data, index) => {
              return <Place key={index} place={data}/>;
           })}
         </div>
@@ -77,7 +77,7 @@ class BioWatchList extends React.Component {
     render() {
       return (
         <div className='bioWatchList'>
-          {this.props.devices.map (function (device, index) {
+          {this.props.devices.map ((device, index) => {
              return <BioWatch key={index} bioSignal={device}/>;
           })}
         </div>

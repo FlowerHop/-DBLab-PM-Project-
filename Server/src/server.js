@@ -9,6 +9,20 @@ let bioWatchManager = require ('./BioWatchManager');
 let app = express ();
 
 let PATIENTS_STATUS_FILE_PATH = path.join (__dirname, 'patients_status.json');
+// let PPG_SAMPLE_FREQUENCY = 5; // s
+
+// var ppgTimeConuter = 0;
+// var ppgAbnormalCounts = 0;
+// var PPGClocker = setInterval ( () => {
+//   ppgTimeConuter++;
+//   if (ppgTimeCounter >= PPG_SAMPLE_FREQUENCY) {
+//     ppgTimeConuter = 0;
+//     ppgAbnormalCounts++;
+//     this.bioWatchManager.inputBioSignal
+    
+//   }
+
+// }, 1);
 
 app.set ('port', (process.env.PORT || 1338));
 app.use (bodyParser.json ());
@@ -80,22 +94,24 @@ app.post ('/api/patients_status', (req, res) => {
 });
 
 app.get ('/api/patients_status', (req, res) => {
-  let flowControl = new Promise ((resolve, reject) => {
-    fs.readFile (PATIENTS_STATUS_FILE_PATH, (err, data) => {
-      if (err) {
-        reject (err);
-      }
+  // let flowControl = new Promise ((resolve, reject) => {
+  //   fs.readFile (PATIENTS_STATUS_FILE_PATH, (err, data) => {
+  //     if (err) {
+  //       reject (err);
+  //     }
       
-      res.json (JSON.parse (data));
-      resolve ();
-    });
-  })
-  .catch ((err) => {
-    console.log ('Error: ' + err);    
-  })
-  .then (() => {
-    res.end ();
-  });
+  //     res.json (JSON.parse (data));
+  //     resolve ();
+  //   });
+  // })
+  // .catch ((err) => {
+  //   console.log ('Error: ' + err);    
+  // })
+  // .then (() => {
+  //   res.end ();
+  // });
+  res.send (this.bioWatchManager.getPatients ());
+  res.end ();
 });
 
 app.get ('/test/scanedResult/:inPlace/:bioWatchId/:rssi/', (req, res) => {

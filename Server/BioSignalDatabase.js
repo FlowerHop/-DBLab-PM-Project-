@@ -187,14 +187,35 @@ var BioSignalDatabase = function () {
       });
     }
   }, {
-    key: 'getBioSignalsFromBioWatchAtTimePeriod',
-    value: function getBioSignalsFromBioWatchAtTimePeriod(device_id, startDateAndTime, endDateAndTime) {
+    key: 'getBioSignalsFromBioWatchAtStartTime',
+    value: function getBioSignalsFromBioWatchAtStartTime(device_id, startDateAndTime) {
       var _this10 = this;
 
       return new Promise(function (resolve, reject) {
         var bioSignals = [];
 
-        _this10.db.all("SELECT place_id, pulse, rssi, dateAndTime FROM " + _this10.bioWatchInPlaceTable + " WHERE device_id = ? AND dateAndTime >= ? AND dateAndTime <= ?", [device_id, startDateAndTime, endDateAndTime], function (err, rows) {
+        _this10.db.all("SELECT place_id, pulse, rssi, dateAndTime FROM " + _this10.bioWatchInPlaceTable + " WHERE device_id = ? AND dateAndTime >= ?", [device_id, startDateAndTime], function (err, rows) {
+          if (err) {
+            reject(err);
+          }
+
+          rows.forEach(function (row) {
+            bioSignals.push(row);
+          });
+
+          resolve(bioSignals);
+        });
+      });
+    }
+  }, {
+    key: 'getBioSignalsFromBioWatchAtTimePeriod',
+    value: function getBioSignalsFromBioWatchAtTimePeriod(device_id, startDateAndTime, endDateAndTime) {
+      var _this11 = this;
+
+      return new Promise(function (resolve, reject) {
+        var bioSignals = [];
+
+        _this11.db.all("SELECT place_id, pulse, rssi, dateAndTime FROM " + _this11.bioWatchInPlaceTable + " WHERE device_id = ? AND dateAndTime >= ? AND dateAndTime <= ?", [device_id, startDateAndTime, endDateAndTime], function (err, rows) {
           //this.db.all ("SELECT pulse, dateAndTime FROM " + this.bioWatchInPlaceTable + " WHERE device_id = ? AND dateAndTime >= ? AND dateAndTime <= ?", [device_id, startDateAndTime, endDateAndTime], (err, rows) => {
           if (err) {
             reject(err);
@@ -214,12 +235,12 @@ var BioSignalDatabase = function () {
   }, {
     key: 'getBioSignalsFromBioWatch',
     value: function getBioSignalsFromBioWatch(device_id) {
-      var _this11 = this;
+      var _this12 = this;
 
       return new Promise(function (resolve, reject) {
         var bioSignals = [];
 
-        _this11.db.all("SELECT device_id, place_id, pulse, rssi, dateAndTime FROM " + _this11.bioWatchInPlaceTable + " WHERE device_id = ? ORDER BY dateAndTime DESC", [device_id], function (err, rows) {
+        _this12.db.all("SELECT device_id, place_id, pulse, rssi, dateAndTime FROM " + _this12.bioWatchInPlaceTable + " WHERE device_id = ? ORDER BY dateAndTime DESC", [device_id], function (err, rows) {
           if (err) {
             reject(err);
           }
@@ -235,11 +256,11 @@ var BioSignalDatabase = function () {
   }, {
     key: 'getBioSignalsInPlace',
     value: function getBioSignalsInPlace(inPlace) {
-      var _this12 = this;
+      var _this13 = this;
 
       return new Promise(function (resolve, reject) {
         var bioSignals = [];
-        _this12.db.all("SELECT device_id, pulse, rssi, dateAndTime FROM " + _this12.bioWatchInPlaceTable + " WHERE place_id = ?", [inPlace], function (err, rows) {
+        _this13.db.all("SELECT device_id, pulse, rssi, dateAndTime FROM " + _this13.bioWatchInPlaceTable + " WHERE place_id = ?", [inPlace], function (err, rows) {
           if (err) {
             reject(err);
           }
@@ -258,10 +279,10 @@ var BioSignalDatabase = function () {
   }, {
     key: 'getBioSignals',
     value: function getBioSignals() {
-      var _this13 = this;
+      var _this14 = this;
 
       return new Promise(function (resolve, reject) {
-        _this13.db.all("SELECT * FROM " + _this13.bioWatchInPlaceTable + " ORDER BY dateAndTime DESC", function (err, rows) {
+        _this14.db.all("SELECT * FROM " + _this14.bioWatchInPlaceTable + " ORDER BY dateAndTime DESC", function (err, rows) {
           if (err) {
             reject(err);
           }
@@ -277,11 +298,11 @@ var BioSignalDatabase = function () {
   }, {
     key: 'destroy',
     value: function destroy() {
-      var _this14 = this;
+      var _this15 = this;
 
       // remove the db file
       return new Promise(function (resolve, reject) {
-        fs.unlink(_this14.fileName, function (err) {
+        fs.unlink(_this15.fileName, function (err) {
           if (err) {
             //reject (err);
           }
