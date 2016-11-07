@@ -63,8 +63,8 @@ class Place extends React.Component {
     render() {
       return (
         <div className="place">
-        <p>{this.props.place.inPlace}</p>
-        <BioWatchList devices={this.props.place.devices}/>
+        <p>{this.props.place.placeID}</p>
+        <BioWatchList devices={this.props.place.bioWatchList}/>
       </div>
       );
     }
@@ -92,8 +92,9 @@ class BioWatch extends React.Component {
     render() {
       return (
         <div className='bioWatch'>
-          <h4>{this.props.bioSignal.device_id}</h4>
-          <p>Pulse: {this.props.bioSignal.pulse}</p>
+          <h4>{this.props.bioSignal.bioWatchID}</h4>
+          <p>Pulse: {this.props.bioSignal.wear.patient.bioSignal.pulse}</p>
+          <p>Status: {this.props.bioSignal.wear.patient.status}</p>
         </div>
       );
     }

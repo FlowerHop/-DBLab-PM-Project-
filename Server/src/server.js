@@ -1,5 +1,6 @@
 let fs = require ('fs');
 let path = require ('path');
+let util = require ('util');
 let express = require ('express');
 let bodyParser = require ('body-parser');
 let queryString = require ('querystring');
@@ -93,24 +94,44 @@ app.post ('/api/patients_status', (req, res) => {
   });
 });
 
-app.get ('/api/patients_status', (req, res) => {
-  // let flowControl = new Promise ((resolve, reject) => {
-  //   fs.readFile (PATIENTS_STATUS_FILE_PATH, (err, data) => {
-  //     if (err) {
-  //       reject (err);
-  //     }
+// for json
+// app.get ('/api/patients_status', (req, res) => {
+//   let flowControl = new Promise ((resolve, reject) => {
+//     fs.readFile (PATIENTS_STATUS_FILE_PATH, (err, data) => {
+//       if (err) {
+//         reject (err);
+//       }
       
-  //     res.json (JSON.parse (data));
-  //     resolve ();
-  //   });
-  // })
-  // .catch ((err) => {
-  //   console.log ('Error: ' + err);    
-  // })
-  // .then (() => {
-  //   res.end ();
-  // });
-  res.send (this.bioWatchManager.getPatients ());
+//       res.json (JSON.parse (data));
+//       resolve ();
+//     });
+//   })
+//   .catch ((err) => {
+//     console.log ('Error: ' + err);    
+//   })
+//   .then (() => {
+//     res.end ();
+//   });
+//   // res.send (this.bioWatchManager.testForGetPatientsStatus ());
+//   // res.end ();
+// });
+
+app.get ('/api/patients_status', (req, res) => {
+  var cache = [];
+  var objStr = JSON.stringify (bioWatchManager.getPatientList (), function (key, value) {
+      if (typeof value === 'object' && value !== null) {
+          if (cache.indexOf(value) !== -1) {
+              // Circular reference found, discard key
+              return;
+          }
+          // Store value in our collection
+          cache.push(value);
+      }
+      return value;
+  });
+  cache = null; // Enable garbage collection
+
+  res.json (JSON.parse (objStr));
   res.end ();
 });
 

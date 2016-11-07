@@ -11,11 +11,7 @@ var Patient = function () {
   function Patient(id) {
     _classCallCheck(this, Patient);
 
-    var NORMAL = 0;
-    var ALARM = 1;
-    var WARNING = 2;
-
-    this.status = NORMAL;
+    this.status = Patient.NORMAL;
 
     this.patientID = id;
 
@@ -24,18 +20,34 @@ var Patient = function () {
     this.wear.patient = this;
 
     this.abnormalPulseRateDetector = new AbnormalPulseRateDetector(this);
+    this.abnormalPulseRateDetector.startDetect();
   }
 
   _createClass(Patient, [{
     key: 'inputBioSignal',
     value: function inputBioSignal(bioSignal) {
       this.bioSignal = bioSignal;
-      abnormalPulseRateDetector.input(this.bioSignal.pulse);
+      this.abnormalPulseRateDetector.input(this.bioSignal.pulse);
     }
   }, {
     key: 'wearBioWatch',
     value: function wearBioWatch(bioWatch) {
       this.wear.wearBioWatch(bioWatch);
+    }
+  }], [{
+    key: 'NORMAL',
+    get: function get() {
+      return 0;
+    }
+  }, {
+    key: 'ALARM',
+    get: function get() {
+      return 1;
+    }
+  }, {
+    key: 'WARNING',
+    get: function get() {
+      return 2;
     }
 
     // inputPulse (pulse, dateAndTime = new Date ().getTime ()) {

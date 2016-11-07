@@ -8,7 +8,10 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 
 // Main Control from Server to BioSignalDatabase
 // maintain criteria setting, patients status and operation of the BioSignalDatabase
+var Place = require('./Place');
 var Patient = require('./Patient');
+var BioWatch = require('./BioWatch');
+var BioSignal = require('./BioSignal');
 
 var BioWatchManager = function () {
   function BioWatchManager() {
@@ -23,6 +26,10 @@ var BioWatchManager = function () {
     this.bioWatchList = [];
     this.bioSignalDatabase = new (require('./BioSignalDatabase'))(this.DATABASE_FILE_NAME);
     this.patients = [];
+
+    this.newBioWatchList = [];
+    this.patientList = [];
+    this.placeList = [];
   }
 
   _createClass(BioWatchManager, [{
@@ -107,6 +114,25 @@ var BioWatchManager = function () {
               _this.bioSignalDatabase.insertBioWatch(bioWatch);
             });
 
+            // test -----
+            var placeIDList = defaultSettings.rooms;
+            var bioWatchIDList = defaultSettings.bioWatches;
+
+            placeIDList.forEach(function (placeID) {
+              _this.placeList.push(new Place(placeID));
+            });
+
+            bioWatchIDList.forEach(function (bioWatchID) {
+              var bioWatch = new BioWatch(bioWatchID);
+              var patient = new Patient(bioWatchID);
+              patient.wearBioWatch(bioWatch);
+
+              _this.newBioWatchList.push(bioWatch);
+              _this.patientList.push(patient);
+            });
+
+            // test =====
+
             var initial_status = [];
 
             for (var i = 0; i < rooms.length; i++) {
@@ -119,10 +145,10 @@ var BioWatchManager = function () {
               None.devices.push({ device_id: bioWatch, rssi: 0, pulse: 0 });
             }
 
-            for (var _i2 = 0; _i2 < bioWatches.length; _i2++) {
-              var _bioWatch = bioWatches[_i2];
-              _this.patients.push(new Patient(_bioWatch, _bioWatch));
-            }
+            // for (let i = 0; i < bioWatches.length; i++) {
+            //   let bioWatch = bioWatches[i];
+            //   this.patients.push (new Patient (bioWatch, bioWatch));
+            // }
 
             initial_status.push(None);
             return new Promise(function (resolve, reject) {
@@ -154,16 +180,16 @@ var BioWatchManager = function () {
                   None.devices.push({ device_id: bioWatchList[id], pulse: 0, rssi: 0, dateAndTime: 0 });
                 }
 
-                for (var _id in bioWatchList) {
-                  _this.patients.push(new Patient(bioWatchList[_id], bioWatchList[_id]));
-                }
+                // for (let id in bioWatchList) {
+                //   this.patients.push (new Patient (bioWatchList[id], bioWatchList[id]));
+                // }
 
                 initial_status.push(None);
 
                 var promiseArray = [];
 
-                for (var _id2 in bioWatchList) {
-                  promiseArray.push(_this.bioSignalDatabase.getBioSignalsFromBioWatch(bioWatchList[_id2]));
+                for (var _id in bioWatchList) {
+                  promiseArray.push(_this.bioSignalDatabase.getBioSignalsFromBioWatch(bioWatchList[_id]));
                 }
 
                 return Promise.all(promiseArray);
@@ -259,102 +285,120 @@ var BioWatchManager = function () {
       return this.bioSignalDatabase.insertBioSignal(device_id, place_id, pulse, rssi, dateAndTime).then(function () {
         return _this2.updateStatus(bioInfo);
       }).catch(function (err) {
-        console.log('Error: inputBiosignal (' + bioInfo + ') ' + err);
+        console.log('Error: inputBioSignal (' + bioInfo + ') ' + err);
       });
     }
   }, {
     key: 'updateStatus',
     value: function updateStatus(bioInfo) {
-      var _this3 = this;
-
-      for (var i in patients) {
-        var patient = patients[i];
-        if (patient.getBioWatchID == bioInfo.device_id) {
-          patient.inputPulse(bioInfo.pulse, bioInfo.dateAndTime);
+      var bioWatch = null;
+      for (var i in this.newBioWatchList) {
+        bioWatch = this.newBioWatchList[i];
+        if (bioWatch.wear.patient != null && bioWatch.bioWatchID == bioInfo.device_id) {
+          bioWatch.wear.patient.inputBioSignal(new BioSignal(bioInfo.pulse, bioInfo.dateAndTime));
           break;
         }
       }
-      return new Promise(function (resolve, reject) {
-        _this3.fs.readFile(_this3.PATIENTS_STATUS_FILE_PATH, function (err, data) {
-          if (err) {
-            reject(err);
-          }
 
-          var patients_status = JSON.parse(data);
-
-          var device_id = bioInfo.device_id;
-          var place_id = bioInfo.place_id;
-          var pulse = bioInfo.pulse;
-          var rssi = bioInfo.rssi;
-          var dateAndTime = bioInfo.dateAndTime;
-
-          // find the place of this bio watch
-          var lastPlace = -1;
-
-          for (var _i3 in patients_status) {
-            var devices = patients_status[_i3].devices;
-            for (var j in devices) {
-              // find the bio watch whether exist
-              if (devices[j].device_id === device_id) {
-                lastPlace = _i3;
-                // in the same place
-                if (patients_status[lastPlace].inPlace === place_id) {
-                  devices[j].pulse = pulse;
-                  devices[j].rssi = rssi;
-                  devices[j].dateAndTime = dateAndTime;
-                } else {
-                  // remove the last place of the bio watch
-                  devices.splice(j, 1);
-
-                  // change place
-                  for (var k = 0; k < patients_status.length; k++) {
-                    if (patients_status[k].inPlace === place_id) {
-                      patients_status[k].devices.push({ device_id: device_id, pulse: pulse, rssi: rssi, dateAndTime: dateAndTime });
-                      break;
-                    }
-                  }
-                }
-                break;
-              }
-            }
-
-            if (lastPlace != -1) {
-              break;
-            }
-          }
-
-          // if the bio watch doesn't exist
-          if (lastPlace === -1) {
-            reject("This bio watch hasn't been registered: " + device_id);
-            // for (var i = 0; i < patients_status.length; i++) {
-            //   if (patients_status[i].inPlace === inPlace) {
-            //     patients_status[i].devices.push ({device_id: bioWatchId, rssi: rssi, pulse: pulse});          
-            //     break;
-            //   }
-            // }
-          }
-
-          resolve(patients_status);
-        });
-      }).then(function (patients_status) {
-        return new Promise(function (resolve, reject) {
-          _this3.fs.writeFile(_this3.PATIENTS_STATUS_FILE_PATH, JSON.stringify(patients_status), function (err) {
-            if (err) {
-              throw new Error(err);
-            }
-            resolve();
-          });
-        });
-      });
+      for (var _i2 in this.placeList) {
+        var place = this.placeList[_i2];
+        if (place.placeID == bioInfo.place_id) {
+          place.scannedIn(bioWatch, bioInfo.rssi);
+          break;
+        }
+      }
     }
+  }, {
+    key: 'getPatientList',
+    value: function getPatientList() {
+      return this.placeList;
+    }
+
+    // for json
+    // updateStatus (bioInfo) {
+    //   return new Promise ((resolve, reject) => {
+    //     this.fs.readFile (this.PATIENTS_STATUS_FILE_PATH, (err, data) => {
+    //       if (err) {
+    //         reject (err);
+    //       }
+
+    //       let patients_status = JSON.parse (data);
+
+    //       let device_id = bioInfo.device_id;
+    //       let place_id = bioInfo.place_id;
+    //       let pulse = bioInfo.pulse;
+    //       let rssi = bioInfo.rssi;
+    //       let dateAndTime = bioInfo.dateAndTime;
+
+    //       // find the place of this bio watch
+    //       let lastPlace = -1;
+
+    //       for (let i in patients_status) {
+    //         let devices = patients_status[i].devices;
+    //         for (let j in devices) { 
+    //           // find the bio watch whether exist
+    //           if (devices[j].device_id === device_id) {
+    //             lastPlace = i;
+    //             // in the same place
+    //             if (patients_status[lastPlace].inPlace === place_id) {
+    //               devices[j].pulse = pulse;
+    //               devices[j].rssi = rssi;
+    //               devices[j].dateAndTime = dateAndTime;
+    //             } else {
+    //               // remove the last place of the bio watch
+    //               devices.splice (j,1);
+
+    //               // change place
+    //               for (let k = 0; k < patients_status.length; k++) {
+    //                 if (patients_status[k].inPlace === place_id) {
+    //                   patients_status[k].devices.push ({device_id: device_id, pulse: pulse, rssi: rssi, dateAndTime: dateAndTime});
+    //                   break;
+    //                 }
+    //               }
+    //             }
+    //             break;
+    //           }
+    //         }
+
+    //         if (lastPlace != -1) {
+    //           break;
+    //         }
+    //       }
+
+    //       // if the bio watch doesn't exist
+    //       if (lastPlace === -1) {
+    //         reject ("This bio watch hasn't been registered: " + device_id);
+    //         // for (var i = 0; i < patients_status.length; i++) {
+    //         //   if (patients_status[i].inPlace === inPlace) {
+    //         //     patients_status[i].devices.push ({device_id: bioWatchId, rssi: rssi, pulse: pulse});          
+    //         //     break;
+    //         //   }
+    //         // }
+    //       }  
+
+    //       resolve (patients_status);
+    //     });
+    //   })
+    //   .then ((patients_status) => {
+    //     return new Promise ((resolve, reject) => {
+    //       this.fs.writeFile (this.PATIENTS_STATUS_FILE_PATH, JSON.stringify(patients_status), (err) => {
+    //         if (err) {
+    //           throw new Error (err);
+    //         }
+    //         resolve ();
+    //       });
+    //     });
+    //   });
+    // }
+
   }, {
     key: 'updateSpace',
     value: function updateSpace(bioInfo) {
-      var _this4 = this;
+      var _this3 = this;
 
       var toConnect = '-1';
       return new Promise(function (resolve, reject) {
-        _this4.fs.readFile(_this4.PATIENTS_STATUS_FILE_PATH, function (err, data) {
+        _this3.fs.readFile(_this3.PATIENTS_STATUS_FILE_PATH, function (err, data) {
           if (err) {
             reject(err);
           }
@@ -407,7 +451,7 @@ var BioWatchManager = function () {
         });
       }).then(function (patients_status) {
         return new Promise(function (resolve, reject) {
-          _this4.fs.writeFile(_this4.PATIENTS_STATUS_FILE_PATH, JSON.stringify(patients_status), function (err) {
+          _this3.fs.writeFile(_this3.PATIENTS_STATUS_FILE_PATH, JSON.stringify(patients_status), function (err) {
             if (err) {
               reject(err);
             }

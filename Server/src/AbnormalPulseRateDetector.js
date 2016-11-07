@@ -1,31 +1,30 @@
+let Patient;
+
 class AbnormalPulseRateDetector {
   constructor (patient) {
-    const PPG_SAMPLE_FREQUENCY = 5; // s
-    const UPPER_PR = 120;
-    const BOTTOM_PR = 60;
-    const DETECT_INTERVAL = 1000;
-
     this.patient = patient;
     this.ppgTimeCounter = 0;
     this.ppgAbnormalCounts = 0;
     this.ppgNormalCounts = 0;
 
     this.ppgClocker = -1;
+    Patient = require ('./Patient');
   }
 
   input (pr) {
     this.ppgTimeCounter = 0;
+    this.patient.status = Patient.NORMAL;
 
-    if (pr <= UPPER_PR && pr >= BOTTOM_PR) { // normal
+    if (pr <= AbnormalPulseRateDetector.UPPER_PR && pr >= AbnormalPulseRateDetector.BOTTOM_PR) { // normal
       this.normal_counts++;
-    } else if (pr >= UPPER_PR && pr <= BOTTOM_PR) { // abnormal
+    } else if (pr >= AbnormalPulseRateDetector.UPPER_PR && pr <= AbnormalPulseRateDetector.BOTTOM_PR) { // abnormal
       this.abnormal_count++;
     }
   }
 
   startDetect () {
     if (this.ppgClocker == -1) {
-      this.ppgClocker = setInterval (detectStatus, AbnormalPulseRateDetector.DETECT_INTERVAL);  
+      this.ppgClocker = setInterval (this.detectStatus.bind (this), AbnormalPulseRateDetector.DETECT_INTERVAL);  
     }
   }
 
@@ -38,18 +37,18 @@ class AbnormalPulseRateDetector {
 
   detectStatus () {
     this.ppgTimeCounter++;
-      if (this.ppgTimeCounter >= 600000) {
+      if (this.ppgTimeCounter >= 60) {
         // raise warning
-        this.setStatus (Patient.WARNING);
+        this.patient.status = Patient.WARNING;
       } else {
-        if (normal_counts > 300000) {
-          this.setStatus (Patient.NORMAL);
-          abnormal_counts = normal_counts = 0;
+        if (this.normal_counts > 300) {
+          this.patient.status = Patient.NORMAL;
+          this.abnormal_counts = this.normal_counts = 0;
         } 
 
-        if (abnormal_counts > 180000) {
+        if (this.abnormal_counts > 180) {
           // raise an alarm
-          this.setStatus (Patient.ALARM);
+          this.patient.status = Patient.ALARM;
         }
       }
 
@@ -62,6 +61,22 @@ class AbnormalPulseRateDetector {
       //     abnormal_counts = normal_counts = 0
       // if abnormal_counts > 180
       //     raise an alarm
+  }
+
+  static get PPG_SAMPLE_FREQUENCY () {
+    return 5;
+  }
+
+  static get UPPER_PR () {
+    return 120;
+  }
+
+  static get BOTTOM_PR () {
+    return 60;
+  }
+
+  static get DETECT_INTERVAL () {
+    return 1000;
   }
 }
 

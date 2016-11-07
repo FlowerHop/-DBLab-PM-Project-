@@ -1,7 +1,10 @@
 'use strict';
 
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+
 var fs = require('fs');
 var path = require('path');
+var util = require('util');
 var express = require('express');
 var bodyParser = require('body-parser');
 var queryString = require('querystring');
@@ -92,24 +95,44 @@ app.post('/api/patients_status', function (req, res) {
   });
 });
 
-app.get('/api/patients_status', function (req, res) {
-  // let flowControl = new Promise ((resolve, reject) => {
-  //   fs.readFile (PATIENTS_STATUS_FILE_PATH, (err, data) => {
-  //     if (err) {
-  //       reject (err);
-  //     }
+// for json
+// app.get ('/api/patients_status', (req, res) => {
+//   let flowControl = new Promise ((resolve, reject) => {
+//     fs.readFile (PATIENTS_STATUS_FILE_PATH, (err, data) => {
+//       if (err) {
+//         reject (err);
+//       }
 
-  //     res.json (JSON.parse (data));
-  //     resolve ();
-  //   });
-  // })
-  // .catch ((err) => {
-  //   console.log ('Error: ' + err);    
-  // })
-  // .then (() => {
-  //   res.end ();
-  // });
-  res.send(undefined.bioWatchManager.getPatients());
+//       res.json (JSON.parse (data));
+//       resolve ();
+//     });
+//   })
+//   .catch ((err) => {
+//     console.log ('Error: ' + err);    
+//   })
+//   .then (() => {
+//     res.end ();
+//   });
+//   // res.send (this.bioWatchManager.testForGetPatientsStatus ());
+//   // res.end ();
+// });
+
+app.get('/api/patients_status', function (req, res) {
+  var cache = [];
+  var objStr = JSON.stringify(bioWatchManager.getPatientList(), function (key, value) {
+    if ((typeof value === 'undefined' ? 'undefined' : _typeof(value)) === 'object' && value !== null) {
+      if (cache.indexOf(value) !== -1) {
+        // Circular reference found, discard key
+        return;
+      }
+      // Store value in our collection
+      cache.push(value);
+    }
+    return value;
+  });
+  cache = null; // Enable garbage collection
+
+  res.json(JSON.parse(objStr));
   res.end();
 });
 

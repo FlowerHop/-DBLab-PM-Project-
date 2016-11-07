@@ -1,6 +1,7 @@
 // import React from 'react';
 // import ReactDOM from 'react-dom';
 import RecordBox from './RecordBox.js';
+// import RecordBox from './TestForRecordBox.js';
 import PatientBox from './PatientBox.js';
 
 // class App extends React.Component {
