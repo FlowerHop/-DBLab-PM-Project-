@@ -37,17 +37,17 @@ var Patient = function () {
   }], [{
     key: 'NORMAL',
     get: function get() {
-      return 0;
+      return "Normal";
     }
   }, {
     key: 'ALARM',
     get: function get() {
-      return 1;
+      return "Alarm";
     }
   }, {
     key: 'WARNING',
     get: function get() {
-      return 2;
+      return "Warning";
     }
 
     // inputPulse (pulse, dateAndTime = new Date ().getTime ()) {

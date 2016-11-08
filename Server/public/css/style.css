@@ -71,20 +71,41 @@ body h1 {
   border-radius: 15px;
 }
 
-.bioWatch h4 {
-  padding-top: 30px;
+.bioWatch #subject {
+  margin-top: 30px;
   padding-left: 30px; 
+  padding-right: 30px;
   font-weight: bold;
   font-size: 30px;
 }
 
-.bioWatch p{
+
+.bioWatch #subject #patient {
+  float: left;
+}
+
+.bioWatch #subject #status {
+  float: right;
+}
+/*.bioWatch h4 #patient {
+  display: inline-block;
+}*/
+
+.bioWatch p {
+  /*padding-bottom: 0px;*/
+  /*background-color: red;*/
+}
+
+.bioWatch #biosignal {
+  /*background-color: black;*/
   padding-top: 20px;
-  padding-bottom: 30px;
+  padding-bottom: 10px;
+  margin-bottom: 30px;
   padding-right: 30px; 
   text-align: right;
   font-weight: normal;
   font-size: 25px;
+  clear: right;
 }
 
 .axis--x path {
@@ -95,4 +116,10 @@ body h1 {
   fill: none;
   stroke: steelblue;
   stroke-width: 1.5px;
+}
+
+
+.bioWatch 
+.axis--x path {
+  display: none;
 }

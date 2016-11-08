@@ -25,15 +25,15 @@ class Patient {
   }
 
   static get NORMAL () {
-    return 0;
+    return "Normal";
   }
 
   static get ALARM () {
-    return 1;
+    return "Alarm";
   }
 
   static get WARNING () {
-    return 2;
+    return "Warning";
   }
 
   // inputPulse (pulse, dateAndTime = new Date ().getTime ()) {

@@ -92,9 +92,13 @@ class BioWatch extends React.Component {
     render() {
       return (
         <div className='bioWatch'>
-          <h4>{this.props.bioSignal.bioWatchID}</h4>
-          <p>Pulse: {this.props.bioSignal.wear.patient.bioSignal.pulse}</p>
-          <p>Status: {this.props.bioSignal.wear.patient.status}</p>
+          <div id="subject">
+            <h4 id="patient">病人: {this.props.bioSignal.bioWatchID}</h4>
+            <h4 id="status">{this.props.bioSignal.wear.patient.status}</h4>
+          </div>
+          <div id="biosignal">
+            <p>脈搏: {this.props.bioSignal.wear.patient.bioSignal.pulse}</p>
+          </div>
         </div>
       );
     }

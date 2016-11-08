@@ -1,4 +1,9 @@
 import React from 'react';
+import TimePicker from 'material-ui/TimePicker';
+import DatePicker from 'material-ui/DatePicker';
+import RaisedButton from 'material-ui/RaisedButton';
+import TextField from 'material-ui/TextField';
+import {Table, TableBody, TableFooter, TableHeader, TableHeaderColumn, TableRow, TableRowColumn} from 'material-ui/Table';
 import * as d3 from "d3";
 import $ from 'jquery';
 
@@ -6,9 +11,13 @@ export default class PatientBox extends React.Component {
   constructor (props) {
     super (props);
     this.state = {
-      patientsID: '03', 
-      startTime: '0', 
-      endTime: '100000000000000000'
+      patientsID: '', 
+      startDate: null,
+      startTime: null,
+      endDate: null, 
+      endTime: null,
+      patientsIDErrorText: "Patient's ID is require.",
+      data: []
     };
 
     this.handleChange = this.handleChange.bind (this);
@@ -16,26 +25,34 @@ export default class PatientBox extends React.Component {
     this.loadingDataFromServer = this.loadingDataFromServer.bind (this);
   }
 
-  handleChange (event) {
-   	switch (event.target.id) {
-   	  case "patients_id":
-   	    this.setState ({patientsID: event.target.value});
-   	    break;
-   	  case "start_time":
-   	    this.setState ({startTime: event.target.value});
-   	    break;
-   	  case "end_time":
-   	    this.setState ({endTime: event.target.value});
-   	    break;
-   	}
-  }
-
   handleSubmit (event) {
    	// console.log (this.state);
     // input -> draw
+    let sd = this.state.startDate;
+    let st = this.state.startTime;
+    let ed = this.state.endDate;
+    let et = this.state.endTime;
+
+    let start = new Date ();
+    start.setSeconds (st.getSeconds ());
+    start.setMinutes (st.getMinutes ());
+    start.setHours (st.getHours ());
+    start.setDate (sd.getDate ());
+    start.setFullYear (sd.getFullYear ());
+    start.setMonth (sd.getMonth ());
+
+    let end = new Date ();
+    end.setSeconds (et.getSeconds ());
+    end.setMinutes (et.getMinutes ());
+    end.setHours (et.getHours ());
+    end.setDate (ed.getDate ());
+    end.setFullYear (ed.getFullYear ());
+    end.setMonth (ed.getMonth ());
+
+
     var patientsID = this.state.patientsID; // now patientsID equals bioWatchID
-    var startTime = this.state.startTime;
-    var endTime = this.state.endTime;
+    var startTime = start.getTime ();
+    var endTime = end.getTime ();
      
     this.loadingDataFromServer ('/api/bioSignals/' + patientsID + '/' + startTime + '/' + endTime)
     .then (function (data) {
@@ -44,6 +61,10 @@ export default class PatientBox extends React.Component {
       }
 
       data = JSON.parse (data);
+      for (let i in data) {
+        data[i].dateAndTime = new Date (data[i].dateAndTime);
+      }
+      this.setState ({data: data});
       this.lineChart.draw (data);
     }.bind (this));
   }
@@ -51,20 +72,123 @@ export default class PatientBox extends React.Component {
   render () {
     return (
       <div className='patientBox'>
-       <input type="text" id="patients_id"
-         placeholder="Patient ID"
-         value={this.state.patientsID}
-         onChange={this.handleChange} />
-       <input type="text" id="start_time"
-         placeholder="Start Time"
-         value={this.state.startTime}
-         onChange={this.handleChange} />
-       <input type="text" id="end_time"
-         placeholder="End Time"
-         value={this.state.endTime}
-         onChange={this.handleChange} />
-       <button onClick={this.handleSubmit}>Submit</button>
-       <svg width="960" height="500"></svg>
+
+        <TextField
+          value={this.state.patientsID}
+          onChange={(event) => {
+            this.setState ({patientsID: event.target.value});
+            if (event.target.value != '') {
+              this.setState ({patientsIDErrorText: null});
+            } else {
+              this.setState ({patientsIDErrorText: "Patient's ID is require."});
+            }
+          }}
+          hintText="Patient's ID"
+          errorText={this.state.patientsIDErrorText}
+        />
+
+        <DatePicker 
+          hintText="Start Date" 
+          container="inline" 
+          mode="landscape" 
+          value={this.state.startDate}
+          onChange={(event, date) => {
+            this.setState ({startDate: date});
+          }}
+        />
+          
+        <TimePicker
+          format="24hr"
+          hintText="Start Time 24hr Format"
+          value={this.state.startTime}
+          onChange={(event, time) => {
+            this.setState ({startTime: time});
+          }}
+        />
+        
+        <DatePicker 
+          hintText="End Date" 
+          container="inline" 
+          mode="landscape" 
+          value={this.state.endDate}
+          onChange={(event, date) => {
+            this.setState ({endDate: date});
+          }}
+        />
+
+        <TimePicker
+          format="24hr"
+          hintText="End Time 24hr Format"
+          value={this.state.endTime}
+          onChange={(event, time) => {
+            this.setState ({endTime: time});
+          }}
+        />
+
+        <RaisedButton
+          label="Submit"
+          labelPosition="before"
+          primary={true}
+          style={{margin: 12, padding: 0, fontSize: '20px'}}
+          onClick={this.handleSubmit}>
+        </RaisedButton>
+
+        <Table
+          maxHeight="300"
+        >
+          <TableHeader
+            displaySelectAll={false}
+            adjustForCheckbox={false}
+          >
+            <TableRow>
+              <TableHeaderColumn colSpan="4" style={{textAlign: 'center'}}>
+              </TableHeaderColumn>
+            </TableRow>
+            <TableRow>
+              <TableHeaderColumn>ID</TableHeaderColumn>
+              <TableHeaderColumn>Pulse</TableHeaderColumn>
+              <TableHeaderColumn>Time</TableHeaderColumn>
+              <TableHeaderColumn>Place</TableHeaderColumn>
+            </TableRow>
+          </TableHeader>
+
+          <TableBody
+            displayRowCheckbox={false}
+          >
+            {this.state.data.map((row, index) => (
+              <TableRow key={index} selected={row.selected}>
+                <TableRowColumn>{this.state.patientsID}</TableRowColumn>
+                <TableRowColumn>{row.pulse}</TableRowColumn>
+                <TableRowColumn>{
+                  row.dateAndTime.getFullYear () + '/'
+                  + row.dateAndTime.getMonth () + '/'
+                  + row.dateAndTime.getDate () + '-'
+                  + row.dateAndTime.getHours () + ':'
+                  + row.dateAndTime.getMinutes () + ':' 
+                  + row.dateAndTime.getSeconds ()
+                }</TableRowColumn>
+                <TableRowColumn>{row.place_id}</TableRowColumn>
+              </TableRow>
+            ))}
+          </TableBody>
+          <TableFooter
+            adjustForCheckbox={false}
+          >
+            <TableRow>
+              <TableHeaderColumn>ID</TableHeaderColumn>
+              <TableHeaderColumn>Pulse</TableHeaderColumn>
+              <TableHeaderColumn>Time</TableHeaderColumn>
+              <TableHeaderColumn>Place</TableHeaderColumn>
+            </TableRow>
+            <TableRow>
+              <TableHeaderColumn colSpan="4" style={{textAlign: 'center'}}>
+              </TableHeaderColumn>
+            </TableRow>
+          </TableFooter>
+        </Table>
+
+        <svg width="960" height="500"></svg>
+        
       </div>
     );
   }

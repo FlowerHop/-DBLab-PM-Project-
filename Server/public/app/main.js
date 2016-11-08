@@ -1,8 +1,11 @@
 // import React from 'react';
 // import ReactDOM from 'react-dom';
 import RecordBox from './RecordBox.js';
-// import RecordBox from './TestForRecordBox.js';
 import PatientBox from './PatientBox.js';
+import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
+import injectTapEventPlugin from 'react-tap-event-plugin';
+
+// import MyAwesomeReactComponent from './MyAwesomeReactComponent';
 
 // class App extends React.Component {
 //   constructor (props) {
@@ -20,8 +23,13 @@ import PatientBox from './PatientBox.js';
 // }
 // ReactDOM.render (<App />, document.getElementById ('app'));
 import React, { Component } from 'react';
-import { render } from 'react-dom';
+import ReactDOM from 'react-dom';
+// import { render } from 'react-dom';
 import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
+
+// Needed for onTouchTap
+// http://stackoverflow.com/a/34015469/988941
+injectTapEventPlugin();
 
 class App extends Component {
   handleSelect(index, last) {
@@ -45,7 +53,7 @@ class App extends Component {
       //   default behavior, which may be useful in some circumstances (such as animating between tabs).
 
       // }
-
+      <MuiThemeProvider>
       <Tabs onSelect={this.handleSelect} selectedIndex={1}>
 
         {/*
@@ -94,9 +102,13 @@ class App extends Component {
         <TabPanel>
           <h2>Hello from Baz</h2>
         </TabPanel>
+        <TabPanel>
+          <h2>Hello </h2>
+        </TabPanel>
       </Tabs>
+      </MuiThemeProvider>
     );
   }
 }
 
-render (<App />, document.getElementById ('app'));
+ReactDOM.render (<App />, document.getElementById ('app'));
