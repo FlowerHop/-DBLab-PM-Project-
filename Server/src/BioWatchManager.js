@@ -472,6 +472,48 @@ class BioWatchManager {
   getPatients () {
     return this.patients;
   }
+
+  getPatientsStatusJSON () {
+    let result = [];
+
+    for (let i in this.placeList) {
+      let placeObj = {};
+      let place = this.placeList[i];
+      let bioWatchList = place.bioWatchList;
+
+      placeObj.placeID = place.placeID;
+      
+      let bioWatchListObj = [];
+      for (let j in bioWatchList) {
+        let bioWatch = bioWatchList[j];
+        let bioWatchObj = {};
+        bioWatchObj.bioWatchID = bioWatch.bioWatchID;
+
+        let wear = bioWatch.wear;
+        let wearObj = {};
+        
+        if (wear.patient != null) {
+          let patient = wear.patient;
+          let patientObj = {};
+
+          patientObj.patientID = patient.patientID;
+          patientObj.status = patient.status;
+          patientObj.bioSignal = patient.bioSignal;
+
+          wearObj.patient = patientObj;
+        }
+        
+        bioWatchObj.wear = wearObj;
+        bioWatchListObj.push (bioWatchObj);
+      }
+
+      placeObj.bioWatchList = bioWatchListObj;
+
+      result.push (placeObj);
+    }
+
+    return result;
+  }
 }
 
 

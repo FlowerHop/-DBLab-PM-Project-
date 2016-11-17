@@ -15,7 +15,7 @@ class Place {
       bioWatch.updatePlace (this);
   	} else if (bioWatch.currentPlace != this) { // place changing algorithm
       let currentPlace = bioWatch.currentPlace;
-
+      
       if (currentPlace.getRSSI (bioWatch) > rssi) {
       	// currentPlace.bioWatchMoveOut (bioWatch);
       	// this.bioWatchMoveIn (bioWatch, rssi);
@@ -24,7 +24,6 @@ class Place {
         this.rssiList.push (rssi);
         bioWatch.updatePlace (this);
       }
-
   	} else { // update rssi
       this.setRSSI (bioWatch, rssi);
   	}

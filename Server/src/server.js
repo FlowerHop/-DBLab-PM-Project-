@@ -10,20 +10,6 @@ let bioWatchManager = require ('./BioWatchManager');
 let app = express ();
 
 let PATIENTS_STATUS_FILE_PATH = path.join (__dirname, 'patients_status.json');
-// let PPG_SAMPLE_FREQUENCY = 5; // s
-
-// var ppgTimeConuter = 0;
-// var ppgAbnormalCounts = 0;
-// var PPGClocker = setInterval ( () => {
-//   ppgTimeConuter++;
-//   if (ppgTimeCounter >= PPG_SAMPLE_FREQUENCY) {
-//     ppgTimeConuter = 0;
-//     ppgAbnormalCounts++;
-//     this.bioWatchManager.inputBioSignal
-    
-//   }
-
-// }, 1);
 
 app.set ('port', (process.env.PORT || 1338));
 app.use (bodyParser.json ());
@@ -92,6 +78,8 @@ app.post ('/api/patients_status', (req, res) => {
   .then (() => {
     res.end ();
   });
+
+  console.log ("Get from: ", inPlace);
 });
 
 // for json
@@ -117,21 +105,23 @@ app.post ('/api/patients_status', (req, res) => {
 // });
 
 app.get ('/api/patients_status', (req, res) => {
-  var cache = [];
-  var objStr = JSON.stringify (bioWatchManager.getPatientList (), function (key, value) {
-      if (typeof value === 'object' && value !== null) {
-          if (cache.indexOf(value) !== -1) {
-              // Circular reference found, discard key
-              return;
-          }
-          // Store value in our collection
-          cache.push(value);
-      }
-      return value;
-  });
-  cache = null; // Enable garbage collection
+  // var cache = [];
+  // var objStr = JSON.stringify (bioWatchManager.getPatientList (), function (key, value) {
+  //     // console.log (bioWatchManager.getPatientList ());
+  //     if (typeof value === 'object' && value !== null) {
+  //         if (cache.indexOf(value) !== -1) {
+  //             // Circular reference found, discard key
+  //             return;
+  //         }
+  //         // Store value in our collection
+  //         cache.push(value);
+  //     }
+  //     return value;
+  // });
+  // cache = null; // Enable garbage collection
 
-  res.json (JSON.parse (objStr));
+  // // res.json (JSON.parse (objStr));
+  res.json (bioWatchManager.getPatientsStatusJSON ());
   res.end ();
 });
 

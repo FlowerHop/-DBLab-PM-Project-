@@ -481,6 +481,49 @@ var BioWatchManager = function () {
     value: function getPatients() {
       return this.patients;
     }
+  }, {
+    key: 'getPatientsStatusJSON',
+    value: function getPatientsStatusJSON() {
+      var result = [];
+
+      for (var i in this.placeList) {
+        var placeObj = {};
+        var place = this.placeList[i];
+        var bioWatchList = place.bioWatchList;
+
+        placeObj.placeID = place.placeID;
+
+        var bioWatchListObj = [];
+        for (var j in bioWatchList) {
+          var bioWatch = bioWatchList[j];
+          var bioWatchObj = {};
+          bioWatchObj.bioWatchID = bioWatch.bioWatchID;
+
+          var wear = bioWatch.wear;
+          var wearObj = {};
+
+          if (wear.patient != null) {
+            var patient = wear.patient;
+            var patientObj = {};
+
+            patientObj.patientID = patient.patientID;
+            patientObj.status = patient.status;
+            patientObj.bioSignal = patient.bioSignal;
+
+            wearObj.patient = patientObj;
+          }
+
+          bioWatchObj.wear = wearObj;
+          bioWatchListObj.push(bioWatchObj);
+        }
+
+        placeObj.bioWatchList = bioWatchListObj;
+
+        result.push(placeObj);
+      }
+
+      return result;
+    }
   }]);
 
   return BioWatchManager;

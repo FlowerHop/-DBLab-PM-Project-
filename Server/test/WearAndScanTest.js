@@ -4,7 +4,7 @@ var Patient = require ('./../Patient');
 var BioWatch = require ('./../BioWatch');
 var Place = require ('./../Place');
 var Wear = require ('./../Wear');
-var ScannedIn = require ('./../ScannedIn');
+// var ScannedIn = require ('./../ScannedIn');
 
 describe ('Wear Test', function () {
   describe ('Patient A, BioWatch a', function () {
@@ -233,6 +233,8 @@ describe ('Scan Test', function () {
       });
       
       it ('placeB.bioWatchList.length and placeB.rssiList.length should equal 2', function () {
+        console.log (placeA);
+        console.log (placeB);
         placeB.bioWatchList.length.should.equal (2);
         placeB.rssiList.length.should.equal (2);
       });

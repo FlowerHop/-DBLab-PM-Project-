@@ -20,7 +20,6 @@ export default class PatientBox extends React.Component {
       data: []
     };
 
-    this.handleChange = this.handleChange.bind (this);
     this.handleSubmit = this.handleSubmit.bind (this);
     this.loadingDataFromServer = this.loadingDataFromServer.bind (this);
   }

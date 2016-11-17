@@ -14,20 +14,6 @@ var bioWatchManager = require('./BioWatchManager');
 var app = express();
 
 var PATIENTS_STATUS_FILE_PATH = path.join(__dirname, 'patients_status.json');
-// let PPG_SAMPLE_FREQUENCY = 5; // s
-
-// var ppgTimeConuter = 0;
-// var ppgAbnormalCounts = 0;
-// var PPGClocker = setInterval ( () => {
-//   ppgTimeConuter++;
-//   if (ppgTimeCounter >= PPG_SAMPLE_FREQUENCY) {
-//     ppgTimeConuter = 0;
-//     ppgAbnormalCounts++;
-//     this.bioWatchManager.inputBioSignal
-
-//   }
-
-// }, 1);
 
 app.set('port', process.env.PORT || 1338);
 app.use(bodyParser.json());
@@ -93,6 +79,8 @@ app.post('/api/patients_status', function (req, res) {
   bioWatchManager.inputBioSignal(new BioInfo(bioWatchId, inPlace, pulse, rssi, dateAndTime)).then(function () {
     res.end();
   });
+
+  console.log("Get from: ", inPlace);
 });
 
 // for json
@@ -116,10 +104,36 @@ app.post('/api/patients_status', function (req, res) {
 //   // res.send (this.bioWatchManager.testForGetPatientsStatus ());
 //   // res.end ();
 // });
+app.get('/test/s', function (req, res) {
+  res.json(bioWatchManager.getPatientsStatusJSON());
+  res.end();
+});
 
 app.get('/api/patients_status', function (req, res) {
   var cache = [];
   var objStr = JSON.stringify(bioWatchManager.getPatientList(), function (key, value) {
+    // console.log (bioWatchManager.getPatientList ());
+    if ((typeof value === 'undefined' ? 'undefined' : _typeof(value)) === 'object' && value !== null) {
+      if (cache.indexOf(value) !== -1) {
+        // Circular reference found, discard key
+        return;
+      }
+      // Store value in our collection
+      cache.push(value);
+    }
+    return value;
+  });
+  cache = null; // Enable garbage collection
+
+  // res.json (JSON.parse (objStr));
+  res.json(bioWatchManager.getPatientsStatusJSON());
+  res.end();
+});
+
+app.get('/test/s2', function (req, res) {
+  var cache = [];
+  var objStr = JSON.stringify(bioWatchManager.getPatientList(), function (key, value) {
+    // console.log (bioWatchManager.getPatientList ());
     if ((typeof value === 'undefined' ? 'undefined' : _typeof(value)) === 'object' && value !== null) {
       if (cache.indexOf(value) !== -1) {
         // Circular reference found, discard key
@@ -133,6 +147,7 @@ app.get('/api/patients_status', function (req, res) {
   cache = null; // Enable garbage collection
 
   res.json(JSON.parse(objStr));
+  // res.json (bioWatchManager.getPatientsStatusJSON ());
   res.end();
 });
 

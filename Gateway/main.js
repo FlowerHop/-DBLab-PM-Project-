@@ -10,7 +10,7 @@ var SerialPort = require('serialport').SerialPort;
 var xbee_api = require('xbee-api');
 
 var C = xbee_api.constants;
-var COM_NUM = "/dev/cu.usbserial-A403MPU4"; // mac usb
+var COM_NUM = "/dev/cu.usbserial-AL021NSB"; // mac usb
 var BAUDRATE = 9600;
 
 var xbeeAPI = new xbee_api.XBeeAPI({
@@ -31,11 +31,17 @@ var serialport = new SerialPort(COM_NUM, {
 serialport.on("open", function () {
 				var frame_obj = {
 								type: C.FRAME_TYPE.AT_COMMAND,
-								command: "NI",
-								commandParameter: []
+								command: "AT",
+								commandParameter: [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
 				};
 
-				// serialport.write (xbeeAPI.buildFrame (frame_obj));
+				setInterval (function () {
+				serialport.write (xbeeAPI.buildFrame (frame_obj));
+				console.log ('write');
+
+			}, 10);
+
+				serialport.write (xbeeAPI.buildFrame (frame_obj));
 });
 
 xbeeAPI.on("frame_object", function (frame) {
