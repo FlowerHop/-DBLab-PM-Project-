@@ -276,7 +276,10 @@ class BioWatchManager {
     var rssi = bioInfo.rssi;
     var dateAndTime = bioInfo.dateAndTime;
     
-    return this.updateStatus (bioInfo)
+    return Promise.resolve ()
+    .then (() => {
+      return this.updateStatus (bioInfo);
+    })
     .then ((place) => {
       if (place != null) {
         return this.bioSignalDatabase.insertBioSignal (device_id, place.placeID, pulse, rssi, dateAndTime);

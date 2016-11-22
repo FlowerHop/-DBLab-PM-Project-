@@ -282,7 +282,9 @@ var BioWatchManager = function () {
       var rssi = bioInfo.rssi;
       var dateAndTime = bioInfo.dateAndTime;
 
-      return this.updateStatus(bioInfo).then(function (place) {
+      return Promise.resolve().then(function () {
+        return _this2.updateStatus(bioInfo);
+      }).then(function (place) {
         if (place != null) {
           return _this2.bioSignalDatabase.insertBioSignal(device_id, place.placeID, pulse, rssi, dateAndTime);
         }
