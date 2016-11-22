@@ -522,7 +522,7 @@ var BioWatchManager = function () {
           bioWatchListObj.push(bioWatchObj);
         }
 
-        placeObj.bioWatchList = bioWatchListObjnos;
+        placeObj.bioWatchList = bioWatchListObj;
 
         result.push(placeObj);
       }
