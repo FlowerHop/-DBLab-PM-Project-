@@ -13,6 +13,7 @@ class Place {
   	  this.bioWatchList.push (bioWatch);
       this.rssiList.push (rssi);
       bioWatch.updatePlace (this);
+      return this;
   	} else if (bioWatch.currentPlace != this) { // place changing algorithm
       let currentPlace = bioWatch.currentPlace;
       
@@ -23,9 +24,12 @@ class Place {
       	this.bioWatchList.push (bioWatch);
         this.rssiList.push (rssi);
         bioWatch.updatePlace (this);
+        return currentPlace;
       }
+      return this;
   	} else { // update rssi
       this.setRSSI (bioWatch, rssi);
+      return this;
   	}
   }
 

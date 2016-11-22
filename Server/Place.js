@@ -1,7 +1,5 @@
 'use strict';
 
-var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
-
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -26,26 +24,25 @@ var Place = function () {
         this.bioWatchList.push(bioWatch);
         this.rssiList.push(rssi);
         bioWatch.updatePlace(this);
+        return this;
       } else if (bioWatch.currentPlace != this) {
         // place changing algorithm
         var currentPlace = bioWatch.currentPlace;
-        console.log('would');
-        console.log(_typeof(currentPlace.getRSSI(bioWatch)));
-        console.log(typeof rssi === 'undefined' ? 'undefined' : _typeof(rssi));
+
         if (currentPlace.getRSSI(bioWatch) > rssi) {
           // currentPlace.bioWatchMoveOut (bioWatch);
           // this.bioWatchMoveIn (bioWatch, rssi);
-          console.log('change');
           currentPlace.bioWatchMoveOutList(bioWatch);
           this.bioWatchList.push(bioWatch);
           this.rssiList.push(rssi);
           bioWatch.updatePlace(this);
-        } else {
-          console.log('not');
+          return currentPlace;
         }
+        return this;
       } else {
         // update rssi
         this.setRSSI(bioWatch, rssi);
+        return this;
       }
     }
   }, {

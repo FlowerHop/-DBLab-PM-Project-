@@ -276,10 +276,12 @@ class BioWatchManager {
     var rssi = bioInfo.rssi;
     var dateAndTime = bioInfo.dateAndTime;
     
-    return this.bioSignalDatabase.insertBioSignal (device_id, place_id, pulse, rssi, dateAndTime)
-    .then (() => {
-      return this.updateStatus (bioInfo);
-    }) 
+    return this.updateStatus (bioInfo)
+    .then ((place) => {
+      if (place != null) {
+        return this.bioSignalDatabase.insertBioSignal (device_id, place.placeID, pulse, rssi, dateAndTime);
+      }
+    })
     .catch ((err) => {
       console.log ('Error: inputBioSignal (' + bioInfo + ') ' + err);
     });
@@ -287,6 +289,7 @@ class BioWatchManager {
 
   updateStatus (bioInfo) {
     let bioWatch = null;
+    let place = null;
     for (let i in this.newBioWatchList) {
       bioWatch = this.newBioWatchList[i];
       if (bioWatch.wear.patient != null && bioWatch.bioWatchID == bioInfo.device_id) {
@@ -296,12 +299,14 @@ class BioWatchManager {
     }
 
     for (let i in this.placeList) {
-      let place = this.placeList[i];
+      place = this.placeList[i];
       if (place.placeID == bioInfo.place_id) {
-        place.scannedIn (bioWatch, bioInfo.rssi);
+        place = place.scannedIn (bioWatch, bioInfo.rssi);
         break;
       }
     }
+
+    return place;
   }
 
   getPatientList () {
@@ -507,7 +512,7 @@ class BioWatchManager {
         bioWatchListObj.push (bioWatchObj);
       }
 
-      placeObj.bioWatchList = bioWatchListObj;
+      placeObj.bioWatchList = bioWatchListObjnos;
 
       result.push (placeObj);
     }

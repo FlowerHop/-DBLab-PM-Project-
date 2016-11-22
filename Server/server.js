@@ -1,7 +1,5 @@
 'use strict';
 
-var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
-
 var fs = require('fs');
 var path = require('path');
 var util = require('util');
@@ -104,50 +102,25 @@ app.post('/api/patients_status', function (req, res) {
 //   // res.send (this.bioWatchManager.testForGetPatientsStatus ());
 //   // res.end ();
 // });
-app.get('/test/s', function (req, res) {
-  res.json(bioWatchManager.getPatientsStatusJSON());
-  res.end();
-});
 
 app.get('/api/patients_status', function (req, res) {
-  var cache = [];
-  var objStr = JSON.stringify(bioWatchManager.getPatientList(), function (key, value) {
-    // console.log (bioWatchManager.getPatientList ());
-    if ((typeof value === 'undefined' ? 'undefined' : _typeof(value)) === 'object' && value !== null) {
-      if (cache.indexOf(value) !== -1) {
-        // Circular reference found, discard key
-        return;
-      }
-      // Store value in our collection
-      cache.push(value);
-    }
-    return value;
-  });
-  cache = null; // Enable garbage collection
+  // var cache = [];
+  // var objStr = JSON.stringify (bioWatchManager.getPatientList (), function (key, value) {
+  //     // console.log (bioWatchManager.getPatientList ());
+  //     if (typeof value === 'object' && value !== null) {
+  //         if (cache.indexOf(value) !== -1) {
+  //             // Circular reference found, discard key
+  //             return;
+  //         }
+  //         // Store value in our collection
+  //         cache.push(value);
+  //     }
+  //     return value;
+  // });
+  // cache = null; // Enable garbage collection
 
-  // res.json (JSON.parse (objStr));
+  // // res.json (JSON.parse (objStr));
   res.json(bioWatchManager.getPatientsStatusJSON());
-  res.end();
-});
-
-app.get('/test/s2', function (req, res) {
-  var cache = [];
-  var objStr = JSON.stringify(bioWatchManager.getPatientList(), function (key, value) {
-    // console.log (bioWatchManager.getPatientList ());
-    if ((typeof value === 'undefined' ? 'undefined' : _typeof(value)) === 'object' && value !== null) {
-      if (cache.indexOf(value) !== -1) {
-        // Circular reference found, discard key
-        return;
-      }
-      // Store value in our collection
-      cache.push(value);
-    }
-    return value;
-  });
-  cache = null; // Enable garbage collection
-
-  res.json(JSON.parse(objStr));
-  // res.json (bioWatchManager.getPatientsStatusJSON ());
   res.end();
 });
 
