@@ -179,7 +179,7 @@ class BioWatchManager {
         .then ((placeList) => {
           for (let id in placeList) {
           	let place = placeList[id];
-          	this.placeList.push (new Place (place.placeID));
+          	this.placeList.push (new Place (place));
           }
 
           for (let id in placeList) {
@@ -293,9 +293,6 @@ class BioWatchManager {
           return initial_status;
         })
         .then ((initial_status) => {
-          console.log (this.placeList);
-          console.log (this.newBioWatchList);
-
           return new Promise ((resolve, reject) => {
             this.fs.writeFile (this.PATIENTS_STATUS_FILE_PATH, JSON.stringify (initial_status), (err) => {
               if (err) {

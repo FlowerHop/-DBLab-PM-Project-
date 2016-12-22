@@ -1,5 +1,5 @@
 {  
-   "autoReset":true,
+   "autoReset":false,
    "default_settings":{  
       "rooms":[  
          "RoomA",

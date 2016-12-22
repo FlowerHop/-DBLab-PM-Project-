@@ -188,7 +188,7 @@ var BioWatchManager = function () {
               }).then(function (placeList) {
                 for (var id in placeList) {
                   var place = placeList[id];
-                  _this.placeList.push(new Place(place.placeID));
+                  _this.placeList.push(new Place(place));
                 }
 
                 for (var _id in placeList) {
@@ -294,9 +294,6 @@ var BioWatchManager = function () {
 
                 return initial_status;
               }).then(function (initial_status) {
-                console.log(_this.placeList);
-                console.log(_this.newBioWatchList);
-
                 return new Promise(function (resolve, reject) {
                   _this.fs.writeFile(_this.PATIENTS_STATUS_FILE_PATH, JSON.stringify(initial_status), function (err) {
                     if (err) {
