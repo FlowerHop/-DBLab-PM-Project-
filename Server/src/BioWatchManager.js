@@ -15,6 +15,7 @@ class BioWatchManager {
     this.DATABASE_FILE_PATH = path.join (__dirname, this.DATABASE_FILE_NAME);
     this.bioWatchList = [];
     this.bioSignalDatabase = new (require ('./BioSignalDatabase')) (this.DATABASE_FILE_NAME);
+    this.bioSignalDatabase.init ();
     this.patients = [];
 
     this.newBioWatchList = [];
@@ -62,25 +63,36 @@ class BioWatchManager {
         });
       } else {
         console.log ('autoReset == false');
-        return new Promise ((resolve, reject) => {
-          this.fs.access (this.DATABASE_FILE_PATH, this.fs.F_OK, (err) => {
-            if (err == null) {
-              // db exist
-              resolve ();
-            } else {
-              resolve (data.default_settings);
-            }
-          });
+
+        return this.bioSignalDatabase.getPlaceList ()
+        .then ((placeList) => {
+          return null;
         })
-        .then ((defaultSettings) => {
-          return defaultSettings;
+        .catch ((err) => {
+          return data.default_settings;
         });
+
+        // return new Promise ((resolve, reject) => {
+        //   this.fs.access (this.DATABASE_FILE_PATH, this.fs.F_OK, (err) => {
+        //     if (err == null) {
+        //       // db exist
+        //       resolve ();
+        //     } else {
+        //       resolve (data.default_settings);
+        //     }
+        //   });
+        // })
+        // .then ((defaultSettings) => {
+        //   console.log ('default');
+        //   console.log (defaultSettings);
+        //   return defaultSettings;
+        // });
       }
     })
     .then ((defaultSettings) => {
       if (defaultSettings) {
-        console.log ('db file does not exist');
-
+        // console.log ('db file does not exist');
+        console.log ('has no list');
         return Promise.resolve ()
         .then (() => {
           console.log ('destroy');
@@ -95,6 +107,7 @@ class BioWatchManager {
           });
         })
         .then (() => {
+          console.log ('insert');
           let rooms = defaultSettings.rooms;
           let bioWatches = defaultSettings.bioWatches;
     
@@ -141,7 +154,9 @@ class BioWatchManager {
           //   let bioWatch = bioWatches[i];
           //   this.patients.push (new Patient (bioWatch, bioWatch));
           // }
-      
+
+          this.bioSignalDatabase.getPlaceList ().then ((data) => {console.log (data)});
+
           initial_status.push (None);
           return new Promise ((resolve, reject) => {
             this.fs.writeFile (this.PATIENTS_STATUS_FILE_PATH, JSON.stringify(initial_status), (err) => {
@@ -153,7 +168,8 @@ class BioWatchManager {
           });
         });
       } else {
-        console.log ('db file does exist');
+        // console.log ('db file does exist');
+        console.log ('has list');
         let initial_status = [];
 
         return this.bioSignalDatabase.init ()
@@ -162,6 +178,11 @@ class BioWatchManager {
         })
         .then ((placeList) => {
           for (let id in placeList) {
+          	let place = placeList[id];
+          	this.placeList.push (new Place (place.placeID));
+          }
+
+          for (let id in placeList) {
             initial_status.push ({inPlace: placeList[id], devices: []});
           }
         })
@@ -169,14 +190,20 @@ class BioWatchManager {
           return this.bioSignalDatabase.getBioWatchList ();
         })
         .then ((bioWatchList) => {
+          // test
+          for (let id in bioWatchList) {
+          	let bioWatchID = bioWatchList[id];
+          	let bioWatch = new BioWatch (bioWatchID);
+          	let patient = new Patient (bioWatchID);
+          	patient.wearBioWatch (bioWatch);
+          	this.newBioWatchList.push (bioWatch);
+          }
+          // test
+
           let None = {inPlace: 'None', devices: []};
           for (let id in bioWatchList) {
             None.devices.push ({device_id: bioWatchList[id], pulse: 0, rssi: 0, dateAndTime: 0});
           }
-
-          // for (let id in bioWatchList) {
-          //   this.patients.push (new Patient (bioWatchList[id], bioWatchList[id]));
-          // }
 
           initial_status.push (None);
 
@@ -201,6 +228,35 @@ class BioWatchManager {
               let rssi = theLatestBioSignal.rssi;
               let dateAndTime = theLatestBioSignal.dateAndTime;
        
+              // test
+              let bioWatch = null;
+              let place = null;
+
+              for (let i in this.newBioWatchList) {
+              	if (this.newBioWatchList[i].bioWatchID == device_id) {
+                  bioWatch = this.newBioWatchList[i];
+              	  break;
+              	}
+              }
+
+              for (let i in this.placeList) {
+              	if (this.placeList[i].placeID == place_id) {
+                  place = this.placeList[i];
+              	  break;
+              	}
+              }
+
+              if (bioWatch != null && place != null) {
+              	bioWatch.pulse = pulse;
+                bioWatch.dateAndTime = dateAndTime;
+                place.scannedIn (bioWatch, rssi);
+              } else {
+              	console.log ("BioWatch: " + bioWatch);
+              	console.log ("Place: " + place);
+              }
+              
+              // test 
+
               let noneDeviceList = initial_status[initial_status.length - 1];
        
               for (let place in initial_status) {
@@ -237,12 +293,15 @@ class BioWatchManager {
           return initial_status;
         })
         .then ((initial_status) => {
+          console.log (this.placeList);
+          console.log (this.newBioWatchList);
+
           return new Promise ((resolve, reject) => {
             this.fs.writeFile (this.PATIENTS_STATUS_FILE_PATH, JSON.stringify (initial_status), (err) => {
               if (err) {
                 reject (err);
               }
-              console.log ('write');
+
               resolve();
             });
           });
@@ -519,7 +578,7 @@ class BioWatchManager {
 
       result.push (placeObj);
     }
-
+    console.log (result);
     return result;
   }
 }

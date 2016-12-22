@@ -25,6 +25,7 @@ var BioWatchManager = function () {
     this.DATABASE_FILE_PATH = path.join(__dirname, this.DATABASE_FILE_NAME);
     this.bioWatchList = [];
     this.bioSignalDatabase = new (require('./BioSignalDatabase'))(this.DATABASE_FILE_NAME);
+    this.bioSignalDatabase.init();
     this.patients = [];
 
     this.newBioWatchList = [];
@@ -75,23 +76,33 @@ var BioWatchManager = function () {
           });
         } else {
           console.log('autoReset == false');
-          return new Promise(function (resolve, reject) {
-            _this.fs.access(_this.DATABASE_FILE_PATH, _this.fs.F_OK, function (err) {
-              if (err == null) {
-                // db exist
-                resolve();
-              } else {
-                resolve(data.default_settings);
-              }
-            });
-          }).then(function (defaultSettings) {
-            return defaultSettings;
+
+          return _this.bioSignalDatabase.getPlaceList().then(function (placeList) {
+            return null;
+          }).catch(function (err) {
+            return data.default_settings;
           });
+
+          // return new Promise ((resolve, reject) => {
+          //   this.fs.access (this.DATABASE_FILE_PATH, this.fs.F_OK, (err) => {
+          //     if (err == null) {
+          //       // db exist
+          //       resolve ();
+          //     } else {
+          //       resolve (data.default_settings);
+          //     }
+          //   });
+          // })
+          // .then ((defaultSettings) => {
+          //   console.log ('default');
+          //   console.log (defaultSettings);
+          //   return defaultSettings;
+          // });
         }
       }).then(function (defaultSettings) {
         if (defaultSettings) {
-          console.log('db file does not exist');
-
+          // console.log ('db file does not exist');
+          console.log('has no list');
           return Promise.resolve().then(function () {
             console.log('destroy');
             return Promise.resolve().then(function () {
@@ -103,6 +114,7 @@ var BioWatchManager = function () {
               return _this.bioSignalDatabase.init();
             });
           }).then(function () {
+            console.log('insert');
             var rooms = defaultSettings.rooms;
             var bioWatches = defaultSettings.bioWatches;
 
@@ -150,6 +162,10 @@ var BioWatchManager = function () {
             //   this.patients.push (new Patient (bioWatch, bioWatch));
             // }
 
+            _this.bioSignalDatabase.getPlaceList().then(function (data) {
+              console.log(data);
+            });
+
             initial_status.push(None);
             return new Promise(function (resolve, reject) {
               _this.fs.writeFile(_this.PATIENTS_STATUS_FILE_PATH, JSON.stringify(initial_status), function (err) {
@@ -162,7 +178,8 @@ var BioWatchManager = function () {
           });
         } else {
           var _ret = function () {
-            console.log('db file does exist');
+            // console.log ('db file does exist');
+            console.log('has list');
             var initial_status = [];
 
             return {
@@ -170,26 +187,37 @@ var BioWatchManager = function () {
                 return _this.bioSignalDatabase.getPlaceList();
               }).then(function (placeList) {
                 for (var id in placeList) {
-                  initial_status.push({ inPlace: placeList[id], devices: [] });
+                  var place = placeList[id];
+                  _this.placeList.push(new Place(place.placeID));
+                }
+
+                for (var _id in placeList) {
+                  initial_status.push({ inPlace: placeList[_id], devices: [] });
                 }
               }).then(function () {
                 return _this.bioSignalDatabase.getBioWatchList();
               }).then(function (bioWatchList) {
-                var None = { inPlace: 'None', devices: [] };
+                // test
                 for (var id in bioWatchList) {
-                  None.devices.push({ device_id: bioWatchList[id], pulse: 0, rssi: 0, dateAndTime: 0 });
+                  var bioWatchID = bioWatchList[id];
+                  var bioWatch = new BioWatch(bioWatchID);
+                  var patient = new Patient(bioWatchID);
+                  patient.wearBioWatch(bioWatch);
+                  _this.newBioWatchList.push(bioWatch);
                 }
+                // test
 
-                // for (let id in bioWatchList) {
-                //   this.patients.push (new Patient (bioWatchList[id], bioWatchList[id]));
-                // }
+                var None = { inPlace: 'None', devices: [] };
+                for (var _id2 in bioWatchList) {
+                  None.devices.push({ device_id: bioWatchList[_id2], pulse: 0, rssi: 0, dateAndTime: 0 });
+                }
 
                 initial_status.push(None);
 
                 var promiseArray = [];
 
-                for (var _id in bioWatchList) {
-                  promiseArray.push(_this.bioSignalDatabase.getBioSignalsFromBioWatch(bioWatchList[_id]));
+                for (var _id3 in bioWatchList) {
+                  promiseArray.push(_this.bioSignalDatabase.getBioSignalsFromBioWatch(bioWatchList[_id3]));
                 }
 
                 return Promise.all(promiseArray);
@@ -205,22 +233,51 @@ var BioWatchManager = function () {
                     var rssi = theLatestBioSignal.rssi;
                     var dateAndTime = theLatestBioSignal.dateAndTime;
 
-                    var noneDeviceList = initial_status[initial_status.length - 1];
+                    // test
+                    var bioWatch = null;
+                    var place = null;
 
-                    for (var place in initial_status) {
-                      if (initial_status[place].inPlace === 'None') {
-                        noneDeviceList = initial_status[place].devices;
+                    for (var i in _this.newBioWatchList) {
+                      if (_this.newBioWatchList[i].bioWatchID == device_id) {
+                        bioWatch = _this.newBioWatchList[i];
                         break;
                       }
                     }
 
-                    for (var i = 0; i < noneDeviceList.length; i++) {
-                      if (noneDeviceList[i].device_id === device_id) {
-                        noneDeviceList.splice(i, 1);
+                    for (var _i2 in _this.placeList) {
+                      if (_this.placeList[_i2].placeID == place_id) {
+                        place = _this.placeList[_i2];
+                        break;
+                      }
+                    }
 
-                        for (var _place in initial_status) {
-                          if (initial_status[_place].inPlace === place_id) {
-                            initial_status[_place].devices.push({
+                    if (bioWatch != null && place != null) {
+                      bioWatch.pulse = pulse;
+                      bioWatch.dateAndTime = dateAndTime;
+                      place.scannedIn(bioWatch, rssi);
+                    } else {
+                      console.log("BioWatch: " + bioWatch);
+                      console.log("Place: " + place);
+                    }
+
+                    // test 
+
+                    var noneDeviceList = initial_status[initial_status.length - 1];
+
+                    for (var _place in initial_status) {
+                      if (initial_status[_place].inPlace === 'None') {
+                        noneDeviceList = initial_status[_place].devices;
+                        break;
+                      }
+                    }
+
+                    for (var _i3 = 0; _i3 < noneDeviceList.length; _i3++) {
+                      if (noneDeviceList[_i3].device_id === device_id) {
+                        noneDeviceList.splice(_i3, 1);
+
+                        for (var _place2 in initial_status) {
+                          if (initial_status[_place2].inPlace === place_id) {
+                            initial_status[_place2].devices.push({
                               device_id: device_id,
                               pulse: pulse,
                               rssi: rssi,
@@ -237,12 +294,15 @@ var BioWatchManager = function () {
 
                 return initial_status;
               }).then(function (initial_status) {
+                console.log(_this.placeList);
+                console.log(_this.newBioWatchList);
+
                 return new Promise(function (resolve, reject) {
                   _this.fs.writeFile(_this.PATIENTS_STATUS_FILE_PATH, JSON.stringify(initial_status), function (err) {
                     if (err) {
                       reject(err);
                     }
-                    console.log('write');
+
                     resolve();
                   });
                 });
@@ -305,8 +365,8 @@ var BioWatchManager = function () {
         }
       }
 
-      for (var _i2 in this.placeList) {
-        place = this.placeList[_i2];
+      for (var _i4 in this.placeList) {
+        place = this.placeList[_i4];
         if (place.placeID == bioInfo.place_id) {
           place = place.scannedIn(bioWatch, bioInfo.rssi);
           break;
@@ -528,7 +588,7 @@ var BioWatchManager = function () {
 
         result.push(placeObj);
       }
-
+      console.log(result);
       return result;
     }
   }]);
