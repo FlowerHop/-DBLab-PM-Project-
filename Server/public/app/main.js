@@ -2,6 +2,7 @@
 // import ReactDOM from 'react-dom';
 import RecordBox from './RecordBox.js';
 import PatientBox from './PatientBox.js';
+import ManagementBox from './ManagementBox.js'
 import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
 import injectTapEventPlugin from 'react-tap-event-plugin';
 
@@ -100,10 +101,10 @@ class App extends Component {
           <PatientBox/>
         </TabPanel>
         <TabPanel>
-          <h2>Hello from Baz</h2>
+          <h2>Still Working...</h2>
         </TabPanel>
         <TabPanel>
-          <h2>Hello </h2>
+          <ManagementBox pollInterval={2000}/>
         </TabPanel>
       </Tabs>
       </MuiThemeProvider>

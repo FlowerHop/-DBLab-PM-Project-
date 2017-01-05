@@ -13,15 +13,16 @@ class BioWatchManager {
     this.PATIENTS_STATUS_FILE_PATH = path.join (__dirname, 'patients_status.json');
     this.DATABASE_FILE_NAME = 'bioSignalDatabase.db';
     this.DATABASE_FILE_PATH = path.join (__dirname, this.DATABASE_FILE_NAME);
-    this.bioWatchList = [];
+
     this.bioSignalDatabase = new (require ('./BioSignalDatabase')) (this.DATABASE_FILE_NAME);
     this.bioSignalDatabase.init ();
     this.patients = [];
 
-    this.newBioWatchList = [];
+    this.bioWatchList = [];
     this.patientList = [];
     this.placeList = [];
   }
+
   init () {
     return new Promise ((resolve, reject) => {
       // if (autoReset == true) {
@@ -132,7 +133,7 @@ class BioWatchManager {
             let patient = new Patient (bioWatchID);
             patient.wearBioWatch (bioWatch);
 
-            this.newBioWatchList.push (bioWatch);
+            this.bioWatchList.push (bioWatch);
             this.patientList.push (patient);
           });
 
@@ -196,7 +197,7 @@ class BioWatchManager {
           	let bioWatch = new BioWatch (bioWatchID);
           	let patient = new Patient (bioWatchID);
           	patient.wearBioWatch (bioWatch);
-          	this.newBioWatchList.push (bioWatch);
+          	this.bioWatchList.push (bioWatch);
           }
           // test
 
@@ -232,9 +233,9 @@ class BioWatchManager {
               let bioWatch = null;
               let place = null;
 
-              for (let i in this.newBioWatchList) {
-              	if (this.newBioWatchList[i].bioWatchID == device_id) {
-                  bioWatch = this.newBioWatchList[i];
+              for (let i in this.bioWatchList) {
+              	if (this.bioWatchList[i].bioWatchID == device_id) {
+                  bioWatch = this.bioWatchList[i];
               	  break;
               	}
               }
@@ -313,15 +314,21 @@ class BioWatchManager {
 
   newPlace (inPlace) {
     return this.bioSignalDatabase.insertPlace (inPlace)
+    .then (() => {
+      this.placeList.push (new Place (inPlace));
+    })
     .catch ((err) => {
       console.log ('Error: newPlace (' + inPlace + ') ' + err);
     });
   }
 
-  newBioWatch (bioWatchId) {
-    return this.bioSignalDatabase.insertBioWatch (bioWatchId)
+  newBioWatch (bioWatchID) {
+    return this.bioSignalDatabase.insertBioWatch (bioWatchID)
+    .then (() => {
+      this.bioWatchList.push (new BioWatch (bioWatchID));
+    })
     .catch ((err) => {
-      console.log ('Error: newBioWatch (' + bioWatchId + ') ' + err);
+      console.log ('Error: newBioWatch (' + bioWatchID + ') ' + err);
     });
   }
 
@@ -349,8 +356,8 @@ class BioWatchManager {
   updateStatus (bioInfo) {
     let bioWatch = null;
     let place = null;
-    for (let i in this.newBioWatchList) {
-      bioWatch = this.newBioWatchList[i];
+    for (let i in this.bioWatchList) {
+      bioWatch = this.bioWatchList[i];
       if (bioWatch.wear.patient != null && bioWatch.bioWatchID == bioInfo.device_id) {
         bioWatch.wear.patient.inputBioSignal (new BioSignal (bioInfo.pulse, bioInfo.dateAndTime));
         break;
@@ -368,8 +375,12 @@ class BioWatchManager {
     return place;
   }
 
-  getPatientList () {
+  getPlaceList () {
     return this.placeList;
+  }
+
+  getBioWatchList () {
+    return this.bioWatchList;
   }
 
   // for json
@@ -519,12 +530,12 @@ class BioWatchManager {
     })
   }
 
-  getBioWatchList () {
-    return this.bioSignalDatabase.getBioWatchList ()
-    .catch ((err) => {
-      console.log ('Error: ' + err);
-    });
-  }
+  // getBioWatchList () {
+  //   return this.bioSignalDatabase.getBioWatchList ()
+  //   .catch ((err) => {
+  //     console.log ('Error: ' + err);
+  //   });
+  // }
 
   getBioSignalsFromBioWatchAtTimePeriod (device_id, startDateAndTime, endDateAndTime) {
     return this.bioSignalDatabase.getBioSignalsFromBioWatchAtTimePeriod (device_id, startDateAndTime, endDateAndTime)
@@ -533,11 +544,11 @@ class BioWatchManager {
     });
   }
 
-  getPatients () {
-    return this.patients;
+  getPatientList () {
+    return this.patientList;
   }
 
-  getPatientsStatusJSON () {
+  getPatientsStatusForJSON () {
     let result = [];
 
     for (let i in this.placeList) {
@@ -577,6 +588,71 @@ class BioWatchManager {
     }
     console.log (result);
     return result;
+  }
+
+  getPlaceListForJSON () {
+    let result = [];
+
+    for (let i in this.placeList) {
+      let placeObj = {};
+      placeObj.placeID = this.placeList[i].placeID;
+      result.push (placeObj);
+    }
+
+    return result;
+  }
+
+  getBioWatchListForJSON () {
+    let result = [];
+
+    for (let i in this.bioWatchList) {
+      let bioWatchObj = {};
+      bioWatchObj.bioWatchID = this.bioWatchList[i].bioWatchID;
+      result.push (bioWatchObj);
+    }
+
+    return result;
+  }
+
+  removePlace (placeID) {
+    console.log ('hi');
+    for (let i in this.placeList) {
+      if (placeID == this.placeList[i].placeID) {
+        this.placeList.splice (i, 1);
+        break;
+      }
+    }
+  }
+
+  removeBioWatch (bioWatchID) {
+    for (let i in this.bioWatchList) {
+      if (bioWatchID == this.bioWatchList[i].bioWatchID) {
+        this.bioWatchList.splice (i, 1);
+        break;
+      }
+    }
+  }
+
+  newPlace (placeID) {
+    for (let i in this.placeList) {
+      if (placeID == this.placeList[i].placeID) {
+        return;
+      }
+    }
+
+    this.placeList.push (new Place (placeID));
+    this.bioSignalDatabase.insertPlace (placeID);
+  }
+
+  newBioWatch (bioWatchID) {
+    for (let i in this.bioWatchList) {
+      if (bioWatchID == this.bioWatchList[i].bioWatchID) {
+        return;
+      }
+    }
+
+    this.bioWatchList.push (new BioWatch (bioWatchID));
+    this.bioSignalDatabase.insertBioWatch (bioWatchID);
   }
 }
 

@@ -71,7 +71,6 @@ export default class PatientBox extends React.Component {
   render () {
     return (
       <div className='patientBox'>
-
         <TextField
           value={this.state.patientsID}
           onChange={(event) => {

@@ -47,7 +47,7 @@ var BioSignalDatabase = function () {
       var _this2 = this;
 
       return new Promise(function (resolve, reject) {
-        _this2.db.run("INSERT INTO " + _this2.placeTable + " (place_id) VALUES (?)", place_id, function (err) {
+        _this2.db.run("INSERT OR IGNORE INTO " + _this2.placeTable + " (place_id) VALUES (?)", place_id, function (err) {
           if (err) {
             reject(err);
           }
@@ -61,7 +61,7 @@ var BioSignalDatabase = function () {
       var _this3 = this;
 
       return new Promise(function (resolve, reject) {
-        _this3.db.run("INSERT INTO " + _this3.bioWatchTable + " (device_id) VALUES (?)", device_id, function (err) {
+        _this3.db.run("INSERT OR IGNORE INTO " + _this3.bioWatchTable + " (device_id) VALUES (?)", device_id, function (err) {
           if (err) {
             reject(err);
           }

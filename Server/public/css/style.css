@@ -4,6 +4,30 @@ body {
   margin-right: 0;
 }
 
+
+
+body h1 {
+  color: #F8FFF4;
+  text-align: left;
+  height: 60px;
+  line-height: 60px;
+  margin-left: 25px;
+}
+
+
+
+.ReactTabs {
+  text-align: right;
+}
+
+
+
+.managementBox {
+  text-align: center;
+  font-size: 40px;
+  background-color: #F8FFF4;
+}
+
 body h1 {
   color: #F8FFF4;
   text-align: left;
@@ -16,7 +40,143 @@ body h1 {
   text-align: right;
 }
 
+.managementBox {
+  text-align: center;
+  font-size: 40px;
+  background-color: #F8FFF4;
+}
+
+.managementBox div {
+  margin:0px auto;
+}
+
+
 .patientBox {
+  text-align: center;
+  font-size: 40px;
+  background-color: #F8FFF4;
+}
+
+
+
+.recordBox {
+  text-align: center;
+  font-size: 40px;
+  background-color: #F8FFF4;
+}
+
+
+
+.placeList {
+  margin-left: 200px;
+  margin-right: 200px;
+  font-size: 30px;
+  text-align: left;
+  padding-top: 20px;
+  padding-bottom: 20px;
+}
+
+
+
+.place {
+  min-height: 150px;
+  margin-top: 20px;
+  margin-bottom: 10px;
+  padding-top: 1px;
+  padding-bottom: 1px;
+  padding-left: 30px;
+  padding-right: 30px;
+  border-radius: 15px;
+  color: white;
+  background-color: #083D77;
+}
+
+
+
+.place p {
+  font-weight: bold;
+}
+
+
+
+.bioWatchList {
+  margin-bottom: 30px;
+  padding-top: 10px;
+  padding-bottom: 10px;
+  min-height: 30px;
+  border-radius: 15px;
+  background-color: #F8FFF4;
+}
+
+
+
+.bioWatch {
+  margin-left: 40px;
+  margin-right: 40px;
+  background-color: #C2948A;
+  border-radius: 15px;
+}
+
+
+
+.bioWatch #subject {
+  margin-top: 30px;
+  padding-left: 30px;
+  padding-right: 30px;
+  font-weight: bold;
+  font-size: 30px;
+}
+
+
+
+.bioWatch #subject #patient {
+  float: left;
+}
+
+
+
+.bioWatch #subject #status {
+  float: right;
+}
+
+
+
+.bioWatch p {
+}
+
+
+
+.bioWatch #biosignal {
+  padding-top: 20px;
+  padding-bottom: 10px;
+  margin-bottom: 30px;
+  padding-right: 30px;
+  text-align: right;
+  font-weight: normal;
+  font-size: 25px;
+  clear: right;
+}
+
+
+
+.axis--x path {
+  display: none;
+}
+
+
+
+.line {
+  fill: none;
+  stroke: steelblue;
+  stroke-width: 1.5px;
+}
+
+
+
+.bioWatch 
+.axis--x path {
+  display: none;
+}{
   text-align: center;
   font-size: 40px;
   background-color: #F8FFF4;
@@ -122,4 +282,12 @@ body h1 {
 .bioWatch 
 .axis--x path {
   display: none;
+}
+
+
+
+body {
+  background-color: #083D77;
+  margin-left: 0;
+  margin-right: 0;
 }

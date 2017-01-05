@@ -32,7 +32,7 @@ class BioSignalDatabase {
 
   insertPlace (place_id) {
     return new Promise ((resolve, reject) => {
-      this.db.run ("INSERT INTO " + this.placeTable + " (place_id) VALUES (?)", place_id, (err) => {
+      this.db.run ("INSERT OR IGNORE INTO " + this.placeTable + " (place_id) VALUES (?)", place_id, (err) => {
         if (err) {
           reject (err);
         }
@@ -43,7 +43,7 @@ class BioSignalDatabase {
 
   insertBioWatch (device_id) {
     return new Promise ((resolve, reject) => {
-      this.db.run ("INSERT INTO " + this.bioWatchTable + " (device_id) VALUES (?)", device_id, (err) => {
+      this.db.run ("INSERT OR IGNORE INTO " + this.bioWatchTable + " (device_id) VALUES (?)", device_id, (err) => {
         if (err) {
           reject (err);
         }

@@ -120,7 +120,7 @@ app.get('/api/patients_status', function (req, res) {
   // cache = null; // Enable garbage collection
 
   // // res.json (JSON.parse (objStr));
-  res.json(bioWatchManager.getPatientsStatusJSON());
+  res.json(bioWatchManager.getPatientsStatusForJSON());
   res.end();
 });
 
@@ -189,26 +189,67 @@ app.get('/api/bioSignals/:bioWatchID/:startTime/:endTime', function (req, res) {
   });
 });
 
-app.get('/api/bioWatchList', function (req, res) {
+app.get('/api/getBioWatchList', function (req, res) {
   Promise.resolve().then(function () {
-    return bioWatchManager.getBioWatchList();
+    return bioWatchManager.getBioWatchListForJSON();
   }).then(function (bioWatchList) {
-    res.json(JSON.stringify(bioWatchList));
+    res.json(bioWatchList);
   }).then(function () {
     res.end();
   });
 });
 
-app.get('/api/configures', function (req, res) {
+app.get('/api/getPlaceList', function (req, res) {
   Promise.resolve().then(function () {
-    return bioWatchManager.getBioWatchList();
-  }).then(function (bioWatchList) {
-    var configures = bioWatchList.join(',');
-    res.send(configures);
+    return bioWatchManager.getPlaceListForJSON();
+  }).then(function (placeList) {
+    res.json(placeList);
   }).then(function () {
     res.end();
   });
 });
+
+app.post('/api/removePlace', function (req, res) {
+
+  var inPlace = req.body.inPlace;
+
+  bioWatchManager.removePlace(inPlace);
+  res.end();
+});
+
+app.post('/api/removeBioWatch', function (req, res) {
+
+  var bioWatch = req.body.bioWatchId;
+
+  bioWatchManager.removeBioWatch(bioWatch);
+  res.end();
+});
+
+app.post('/api/newPlace', function (req, res) {
+  var place = req.body.placeID;
+  bioWatchManager.newPlace(place);
+  res.end();
+});
+
+app.post('/api/newBioWatch', function (req, res) {
+  var bioWatch = req.body.bioWatchID;
+  bioWatchManager.newBioWatch(bioWatch);
+  res.end();
+});
+
+// app.get ('/api/configures', (req, res) => {
+//   Promise.resolve ()
+//   .then (() => {
+//     return bioWatchManager.getBioWatchList ();
+//   })
+//   .then ((bioWatchList) => {
+//     let configures = bioWatchList.join (',');
+//     res.send (configures);
+//   })
+//   .then (() => {
+//     res.end ();
+//   });
+// });
 
 app.listen(app.get('port'), function () {
   bioWatchManager.init().then(function () {

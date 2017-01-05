@@ -23,12 +23,12 @@ var BioWatchManager = function () {
     this.PATIENTS_STATUS_FILE_PATH = path.join(__dirname, 'patients_status.json');
     this.DATABASE_FILE_NAME = 'bioSignalDatabase.db';
     this.DATABASE_FILE_PATH = path.join(__dirname, this.DATABASE_FILE_NAME);
-    this.bioWatchList = [];
+
     this.bioSignalDatabase = new (require('./BioSignalDatabase'))(this.DATABASE_FILE_NAME);
     this.bioSignalDatabase.init();
     this.patients = [];
 
-    this.newBioWatchList = [];
+    this.bioWatchList = [];
     this.patientList = [];
     this.placeList = [];
   }
@@ -139,7 +139,7 @@ var BioWatchManager = function () {
               var patient = new Patient(bioWatchID);
               patient.wearBioWatch(bioWatch);
 
-              _this.newBioWatchList.push(bioWatch);
+              _this.bioWatchList.push(bioWatch);
               _this.patientList.push(patient);
             });
 
@@ -203,7 +203,7 @@ var BioWatchManager = function () {
                   var bioWatch = new BioWatch(bioWatchID);
                   var patient = new Patient(bioWatchID);
                   patient.wearBioWatch(bioWatch);
-                  _this.newBioWatchList.push(bioWatch);
+                  _this.bioWatchList.push(bioWatch);
                 }
                 // test
 
@@ -237,9 +237,9 @@ var BioWatchManager = function () {
                     var bioWatch = null;
                     var place = null;
 
-                    for (var i in _this.newBioWatchList) {
-                      if (_this.newBioWatchList[i].bioWatchID == device_id) {
-                        bioWatch = _this.newBioWatchList[i];
+                    for (var i in _this.bioWatchList) {
+                      if (_this.bioWatchList[i].bioWatchID == device_id) {
+                        bioWatch = _this.bioWatchList[i];
                         break;
                       }
                     }
@@ -317,21 +317,29 @@ var BioWatchManager = function () {
   }, {
     key: 'newPlace',
     value: function newPlace(inPlace) {
-      return this.bioSignalDatabase.insertPlace(inPlace).catch(function (err) {
+      var _this2 = this;
+
+      return this.bioSignalDatabase.insertPlace(inPlace).then(function () {
+        _this2.placeList.push(new Place(inPlace));
+      }).catch(function (err) {
         console.log('Error: newPlace (' + inPlace + ') ' + err);
       });
     }
   }, {
     key: 'newBioWatch',
-    value: function newBioWatch(bioWatchId) {
-      return this.bioSignalDatabase.insertBioWatch(bioWatchId).catch(function (err) {
-        console.log('Error: newBioWatch (' + bioWatchId + ') ' + err);
+    value: function newBioWatch(bioWatchID) {
+      var _this3 = this;
+
+      return this.bioSignalDatabase.insertBioWatch(bioWatchID).then(function () {
+        _this3.bioWatchList.push(new BioWatch(bioWatchID));
+      }).catch(function (err) {
+        console.log('Error: newBioWatch (' + bioWatchID + ') ' + err);
       });
     }
   }, {
     key: 'inputBioSignal',
     value: function inputBioSignal(bioInfo) {
-      var _this2 = this;
+      var _this4 = this;
 
       var device_id = bioInfo.device_id;
       var place_id = bioInfo.place_id;
@@ -340,10 +348,10 @@ var BioWatchManager = function () {
       var dateAndTime = bioInfo.dateAndTime;
 
       return Promise.resolve().then(function () {
-        return _this2.updateStatus(bioInfo);
+        return _this4.updateStatus(bioInfo);
       }).then(function (place) {
         if (place != null) {
-          return _this2.bioSignalDatabase.insertBioSignal(device_id, place.placeID, pulse, rssi, dateAndTime);
+          return _this4.bioSignalDatabase.insertBioSignal(device_id, place.placeID, pulse, rssi, dateAndTime);
         }
       }).catch(function (err) {
         console.log('Error: inputBioSignal (' + bioInfo + ') ' + err);
@@ -354,8 +362,8 @@ var BioWatchManager = function () {
     value: function updateStatus(bioInfo) {
       var bioWatch = null;
       var place = null;
-      for (var i in this.newBioWatchList) {
-        bioWatch = this.newBioWatchList[i];
+      for (var i in this.bioWatchList) {
+        bioWatch = this.bioWatchList[i];
         if (bioWatch.wear.patient != null && bioWatch.bioWatchID == bioInfo.device_id) {
           bioWatch.wear.patient.inputBioSignal(new BioSignal(bioInfo.pulse, bioInfo.dateAndTime));
           break;
@@ -373,9 +381,14 @@ var BioWatchManager = function () {
       return place;
     }
   }, {
-    key: 'getPatientList',
-    value: function getPatientList() {
+    key: 'getPlaceList',
+    value: function getPlaceList() {
       return this.placeList;
+    }
+  }, {
+    key: 'getBioWatchList',
+    value: function getBioWatchList() {
+      return this.bioWatchList;
     }
 
     // for json
@@ -458,11 +471,11 @@ var BioWatchManager = function () {
   }, {
     key: 'updateSpace',
     value: function updateSpace(bioInfo) {
-      var _this3 = this;
+      var _this5 = this;
 
       var toConnect = '-1';
       return new Promise(function (resolve, reject) {
-        _this3.fs.readFile(_this3.PATIENTS_STATUS_FILE_PATH, function (err, data) {
+        _this5.fs.readFile(_this5.PATIENTS_STATUS_FILE_PATH, function (err, data) {
           if (err) {
             reject(err);
           }
@@ -515,7 +528,7 @@ var BioWatchManager = function () {
         });
       }).then(function (patients_status) {
         return new Promise(function (resolve, reject) {
-          _this3.fs.writeFile(_this3.PATIENTS_STATUS_FILE_PATH, JSON.stringify(patients_status), function (err) {
+          _this5.fs.writeFile(_this5.PATIENTS_STATUS_FILE_PATH, JSON.stringify(patients_status), function (err) {
             if (err) {
               reject(err);
             }
@@ -526,13 +539,14 @@ var BioWatchManager = function () {
         console.log('Error: ' + err);
       });
     }
-  }, {
-    key: 'getBioWatchList',
-    value: function getBioWatchList() {
-      return this.bioSignalDatabase.getBioWatchList().catch(function (err) {
-        console.log('Error: ' + err);
-      });
-    }
+
+    // getBioWatchList () {
+    //   return this.bioSignalDatabase.getBioWatchList ()
+    //   .catch ((err) => {
+    //     console.log ('Error: ' + err);
+    //   });
+    // }
+
   }, {
     key: 'getBioSignalsFromBioWatchAtTimePeriod',
     value: function getBioSignalsFromBioWatchAtTimePeriod(device_id, startDateAndTime, endDateAndTime) {
@@ -541,13 +555,13 @@ var BioWatchManager = function () {
       });
     }
   }, {
-    key: 'getPatients',
-    value: function getPatients() {
-      return this.patients;
+    key: 'getPatientList',
+    value: function getPatientList() {
+      return this.patientList;
     }
   }, {
-    key: 'getPatientsStatusJSON',
-    value: function getPatientsStatusJSON() {
+    key: 'getPatientsStatusForJSON',
+    value: function getPatientsStatusForJSON() {
       var result = [];
 
       for (var i in this.placeList) {
@@ -587,6 +601,77 @@ var BioWatchManager = function () {
       }
       console.log(result);
       return result;
+    }
+  }, {
+    key: 'getPlaceListForJSON',
+    value: function getPlaceListForJSON() {
+      var result = [];
+
+      for (var i in this.placeList) {
+        var placeObj = {};
+        placeObj.placeID = this.placeList[i].placeID;
+        result.push(placeObj);
+      }
+
+      return result;
+    }
+  }, {
+    key: 'getBioWatchListForJSON',
+    value: function getBioWatchListForJSON() {
+      var result = [];
+
+      for (var i in this.bioWatchList) {
+        var bioWatchObj = {};
+        bioWatchObj.bioWatchID = this.bioWatchList[i].bioWatchID;
+        result.push(bioWatchObj);
+      }
+
+      return result;
+    }
+  }, {
+    key: 'removePlace',
+    value: function removePlace(placeID) {
+      console.log('hi');
+      for (var i in this.placeList) {
+        if (placeID == this.placeList[i].placeID) {
+          this.placeList.splice(i, 1);
+          break;
+        }
+      }
+    }
+  }, {
+    key: 'removeBioWatch',
+    value: function removeBioWatch(bioWatchID) {
+      for (var i in this.bioWatchList) {
+        if (bioWatchID == this.bioWatchList[i].bioWatchID) {
+          this.bioWatchList.splice(i, 1);
+          break;
+        }
+      }
+    }
+  }, {
+    key: 'newPlace',
+    value: function newPlace(placeID) {
+      for (var i in this.placeList) {
+        if (placeID == this.placeList[i].placeID) {
+          return;
+        }
+      }
+
+      this.placeList.push(new Place(placeID));
+      this.bioSignalDatabase.insertPlace(placeID);
+    }
+  }, {
+    key: 'newBioWatch',
+    value: function newBioWatch(bioWatchID) {
+      for (var i in this.bioWatchList) {
+        if (bioWatchID == this.bioWatchList[i].bioWatchID) {
+          return;
+        }
+      }
+
+      this.bioWatchList.push(new BioWatch(bioWatchID));
+      this.bioSignalDatabase.insertBioWatch(bioWatchID);
     }
   }]);
 
