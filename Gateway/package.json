@@ -1,7 +1,6 @@
 {
   "name": "flowerhop",
   "version": "1.0.0",
-  "description": "",
   "main": "main.js",
   "dependencies": {
     "babel-preset-es2015": "^6.16.0",
@@ -26,5 +25,6 @@
   "bugs": {
     "url": "https://github.com/Flowerhop/-DBLab-PM-Project-/issues"
   },
-  "homepage": "https://github.com/Flowerhop/-DBLab-PM-Project-#readme"
+  "homepage": "https://github.com/Flowerhop/-DBLab-PM-Project-#readme",
+  "description": ""
 }

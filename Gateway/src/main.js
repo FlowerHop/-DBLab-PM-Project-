@@ -1,5 +1,6 @@
 'use strict';
 
+const csv = require ('fast-csv');
 const fs = require ('fs');
 const path = require ('path');
 const bodyParser = require ('body-parser');
@@ -11,6 +12,7 @@ const xbee_api = require ('xbee-api');
 
 const C = xbee_api.constants;
 const COM_NUM = "/dev/cu.usbserial-A403MPU4"; // mac usb
+// const COM_NUM = "/dev/ttyUSB0" // Linux usb
 const BAUDRATE = 9600;
 
 const xbeeAPI = new xbee_api.XBeeAPI ({
@@ -28,6 +30,16 @@ const serialport = new SerialPort (COM_NUM, {
     parser: xbeeAPI.rawParser ()
 });
 
+const csvFileName = "gateway_" + (new Date ().toString ()) + '.csv';
+const csvStream = csv.createWriteStream ({headers: true});
+const writableStream = fs.createWriteStream ("./saves/" + csvFileName);
+
+writableStream.on ("finish", function () {
+	console.log ("finish");
+});
+
+csvStream.pipe (writableStream);
+
 serialport.on ("open", () => {
     var frame_obj = {
     	type: C.FRAME_TYPE.AT_COMMAND,
@@ -43,17 +55,21 @@ xbeeAPI.on ("frame_object", (frame) => {
     
 	var inPlace = IN_PLACE;
     var rssi = frame.rssi;
-    var dateAndTime = new Date ().getTime ();
+    var timestamp = new Date ().getTime ();
     var signal = packageAnalyzer (frame.data);
 	
 	var bioWatchSignal = {
 	  inPlace: inPlace,
-	  bioWatchId: signal.bioWatchId,
+	  bioWatchID: signal.bioWatchID,
+	  index: signal.index,
 	  pulse: signal.pulse,
 	  rssi: rssi,
-	  dateAndTime: dateAndTime
+	  gatewayTimestamp: timestamp
 	};
+
 	console.log (bioWatchSignal);
+    writeToCSV (bioWatchSignal);
+
 	var options = {
 	  // IP:port/api/
 	  url: IP + ':' + PORT + POST_API,
@@ -81,12 +97,26 @@ xbeeAPI.on ("frame_object", (frame) => {
 });
 
 var packageAnalyzer = (data) => {
-  var bioWatchId = data.toString ('utf-8', 0, 2);
-  var pulse = data.readUIntBE (2, 1);
-
+  var bioWatchID = data.toString ('utf-8', 0, 2);
+  var index = data.readUIntBE (2, 5);
+  var pulse = data.readUIntBE (5, 1);
+  
   return {
-  	bioWatchId: bioWatchId, 
-  	pulse: pulse
+  	bioWatchID: bioWatchID, 
+  	pulse: pulse,
+  	index: index
   };
 };
+
+var writeToCSV = (bioWatchSignal) => {
+	csvStream.write  ({
+	  inPlace: bioWatchSignal.inPlace,
+	  bioWatchID: bioWatchSignal.bioWatchID,
+	  index: bioWatchSignal.index,
+	  pulse: bioWatchSignal.pulse,
+	  rssi: bioWatchSignal.rssi,
+	  timestamp: bioWatchSignal.timestamp,
+	  dateAndTime: new Date (bioWatchSignal.timestamp)
+	});
+}
 

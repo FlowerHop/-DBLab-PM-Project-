@@ -1,9 +1,20 @@
 // Main Control from Server to BioSignalDatabase
 // maintain criteria setting, patients status and operation of the BioSignalDatabase
+let csv = require ('fast-csv');
 let Place = require ('./Place');
 let Patient = require ('./Patient');
 let BioWatch = require ('./BioWatch');
 let BioSignal = require ('./BioSignal');
+
+const csvFileName = "server_" + (new Date ().toString ()) + '.csv';
+const csvStream = csv.createWriteStream ({headers: true});
+const writableStream = fs.createWriteStream ("./saves/" + csvFileName);
+
+writableStream.on ("finish", function () {
+  console.log ("finish");
+});
+
+csvStream.pipe (writableStream);
 
 class BioWatchManager {
   constructor () {
@@ -332,19 +343,37 @@ class BioWatchManager {
     });
   }
 
-  inputBioSignal (bioInfo) {
-    var device_id = bioInfo.device_id;
-    var place_id = bioInfo.place_id;
-    var pulse = bioInfo.pulse;
-    var rssi = bioInfo.rssi;
-    var dateAndTime = bioInfo.dateAndTime;
-    
+  // inputBioSignal (bioInfo) {
+  //   var device_id = bioInfo.device_id;
+  //   var place_id = bioInfo.place_id;
+  //   var pulse = bioInfo.pulse;
+  //   var rssi = bioInfo.rssi;
+  //   var dateAndTime = bioInfo.dateAndTime;
+
+  inputBiosignal (inPlace, bioWatchID, index, pulse, rssi, gatewayTimestamp, serverTimestamp) {
+    let device_id = bioWatchID;
+    let place_id = inPlace;
+
     return Promise.resolve ()
     .then (() => {
-      return this.updateStatus (bioInfo);
+      return this.updateStatus (new BioInfo (bioWatchID, place_id, pulse, rssi, serverTimestamp));
     })
     .then ((place) => {
       if (place != null) {
+        // write
+        csvStream.write  ({
+          inPlace: inPlace,
+          bioWatchID: bioWatchID,
+          index: index,
+          pulse: pulse,
+          rssi: rssi,
+          gatewayTimestamp: gatewayTimestamp,
+          serverTimestamp: serverTimestamp,
+          gatewayDateAndTime: new Date (gatewayTimestamp),
+          serverDateAndTime: new Date (serverTimestamp)
+        });
+
+        this.writeToCSV (bioWatchSignal);
         return this.bioSignalDatabase.insertBioSignal (device_id, place.placeID, pulse, rssi, dateAndTime);
       }
     })
@@ -460,75 +489,75 @@ class BioWatchManager {
   //   });
   // }
 
-  updateSpace (bioInfo) {
-    let toConnect = '-1';
-    return new Promise ((resolve, reject) => {
-      this.fs.readFile (this.PATIENTS_STATUS_FILE_PATH, (err, data) => {
-        if (err) {
-          reject (err);
-        }
+  // updateSpace (bioInfo) {
+  //   let toConnect = '-1';
+  //   return new Promise ((resolve, reject) => {
+  //     this.fs.readFile (this.PATIENTS_STATUS_FILE_PATH, (err, data) => {
+  //       if (err) {
+  //         reject (err);
+  //       }
         
-        let patients_status = JSON.parse (data);
+  //       let patients_status = JSON.parse (data);
      
-        let place_id = bioInfo.place_id;
-        let device_id = bioInfo.device_id;
-        let rssi = bioInfo.rssi;
+  //       let place_id = bioInfo.place_id;
+  //       let device_id = bioInfo.device_id;
+  //       let rssi = bioInfo.rssi;
         
-        // find the place of this bio watch
-        let foundPlace = -1;
-        for (let i in patients_status) {
-          let devices = patients_status[i].devices;
+  //       // find the place of this bio watch
+  //       let foundPlace = -1;
+  //       for (let i in patients_status) {
+  //         let devices = patients_status[i].devices;
     
-          for (let j in devices) {
-            // find the bio watch whether exist
-            if (devices[j].device_id === device_id) {
-              foundPlace = i;
+  //         for (let j in devices) {
+  //           // find the bio watch whether exist
+  //           if (devices[j].device_id === device_id) {
+  //             foundPlace = i;
     
-              // if it doesn't connect yet
-              if (patients_status[foundPlace].inPlace == 'None') {
-                toConnect = '1';
-                //res.send (toConnect);
-                break;
-              } 
+  //             // if it doesn't connect yet
+  //             if (patients_status[foundPlace].inPlace == 'None') {
+  //               toConnect = '1';
+  //               //res.send (toConnect);
+  //               break;
+  //             } 
     
-              if (patients_status[foundPlace].inPlace === place_id) {
-                devices[j].rssi = rssi;
-                toConnect = '0';
-              } else {
-                // to check
-                if (parseInt (devices[j].rssi) < parseInt (rssi)) {
-                  toConnect = '1';
-                } else {
-                  toConnect = '0';
-                }
-              }
-              //res.send (toConnect);
-              break;
-            }
-          }
+  //             if (patients_status[foundPlace].inPlace === place_id) {
+  //               devices[j].rssi = rssi;
+  //               toConnect = '0';
+  //             } else {
+  //               // to check
+  //               if (parseInt (devices[j].rssi) < parseInt (rssi)) {
+  //                 toConnect = '1';
+  //               } else {
+  //                 toConnect = '0';
+  //               }
+  //             }
+  //             //res.send (toConnect);
+  //             break;
+  //           }
+  //         }
     
-          if (foundPlace != -1) {
-            break;
-          }
-        }
+  //         if (foundPlace != -1) {
+  //           break;
+  //         }
+  //       }
     
-        resolve (patients_status);
-      });
-    })
-    .then ((patients_status) => {
-      return new Promise ((resolve, reject) => {
-        this.fs.writeFile (this.PATIENTS_STATUS_FILE_PATH, JSON.stringify(patients_status), (err) => {
-          if (err) {
-            reject (err);
-          }
-          resolve (toConnect);
-        });
-      });
-    })
-    .catch ((err) => {
-      console.log ('Error: ' + err);
-    })
-  }
+  //       resolve (patients_status);
+  //     });
+  //   })
+  //   .then ((patients_status) => {
+  //     return new Promise ((resolve, reject) => {
+  //       this.fs.writeFile (this.PATIENTS_STATUS_FILE_PATH, JSON.stringify(patients_status), (err) => {
+  //         if (err) {
+  //           reject (err);
+  //         }
+  //         resolve (toConnect);
+  //       });
+  //     });
+  //   })
+  //   .catch ((err) => {
+  //     console.log ('Error: ' + err);
+  //   })
+  // }
 
   // getBioWatchList () {
   //   return this.bioSignalDatabase.getBioWatchList ()
@@ -615,7 +644,6 @@ class BioWatchManager {
   }
 
   removePlace (placeID) {
-    console.log ('hi');
     for (let i in this.placeList) {
       if (placeID == this.placeList[i].placeID) {
         this.placeList.splice (i, 1);

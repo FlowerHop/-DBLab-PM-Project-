@@ -28,15 +28,15 @@ app.use(function (req, res, next) {
   next();
 });
 
-app.get('/test/update_status/:inPlace/:bioWatchId/:pulse/:rssi', function (req, res) {
+app.get('/test/update_status/:inPlace/:bioWatchID/:pulse/:rssi', function (req, res) {
   var inPlace = req.params.inPlace;
-  var bioWatchId = req.params.bioWatchId;
+  var bioWatchID = req.params.bioWatchID;
   var pulse = req.params.pulse;
   var rssi = req.params.rssi;
 
   var bioWatchSignal = {
     inPlace: inPlace,
-    bioWatchId: bioWatchId,
+    bioWatchID: bioWatchID,
     pulse: pulse,
     rssi: rssi
   };
@@ -69,16 +69,19 @@ app.get('/test/update_status/:inPlace/:bioWatchId/:pulse/:rssi', function (req, 
 app.post('/api/patients_status', function (req, res) {
 
   var inPlace = req.body.inPlace;
-  var bioWatchId = req.body.bioWatchId;
+  var bioWatchID = req.body.bioWatchID;
+  var index = req.body.index;
   var pulse = req.body.pulse;
   var rssi = req.body.rssi;
-  var dateAndTime = new Date().getTime();
+  var gatewayTimestamp = req.body.gatewayTimestamp;
+  var serverTimestamp = new Date().getTime();
 
-  bioWatchManager.inputBioSignal(new BioInfo(bioWatchId, inPlace, pulse, rssi, dateAndTime)).then(function () {
+  // bioWatchManager.inputBioSignal (new BioInfo (bioWatchID, inPlace, pulse, rssi, serverTimestamp))
+  bioWatchManager.inputBioSignal(inPlace, bioWatchID, index, pulse, rssi, gatewayTimestamp, serverTimestamp).then(function () {
     res.end();
   });
 
-  console.log("Get from: ", inPlace);
+  // console.log ("Get from: ", inPlace);
 });
 
 // for json
@@ -124,56 +127,61 @@ app.get('/api/patients_status', function (req, res) {
   res.end();
 });
 
-app.get('/test/scanedResult/:inPlace/:bioWatchId/:rssi/', function (req, res) {
-  var inPlace = req.params.inPlace;
-  var bioWatchId = req.params.bioWatchId;
-  var rssi = req.params.rssi;
+// app.get ('/test/scanedResult/:inPlace/:bioWatchId/:rssi/', (req, res) => {
+//   let inPlace = req.params.inPlace;
+//   let bioWatchId = req.params.bioWatchId;
+//   let rssi = req.params.rssi;
 
-  var bioWatchSignal = {
-    inPlace: inPlace,
-    bioWatchId: bioWatchId,
-    rssi: rssi
-  };
+//   let bioWatchSignal = {
+//     inPlace: inPlace,
+//     bioWatchId: bioWatchId, 
+//     rssi: rssi
+//   };
 
-  var options = {
-    url: 'http://localhost:' + app.get('port') + '/api/scanedResult',
-    method: 'POST',
-    json: true,
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: bioWatchSignal
-  };
+//   let options = {
+//     url: 'http://localhost:' + app.get ('port') + '/api/scanedResult',
+//     method: 'POST',
+//     json: true,
+//     headers: {
+//       "Content-Type": "application/json"
+//     },
+//     body: bioWatchSignal
+//   };
 
-  var flowControl = new Promise(function (resolve, reject) {
-    request(options, function (error, response, body) {
-      if (error) {
-        reject(error);
-      }
-      res.send(response.body.toString());
-      resolve();
-    });
-  }).catch(function (error) {
-    console.log('Post data error: ' + error);
-  }).then(function () {
-    res.end();
-  });
-});
+//   let flowControl = new Promise ((resolve, reject) => {
+//     request (options, (error, response, body) => {
+//       if (error) {
+//         reject (error);
+//       }
+//       res.send (response.body.toString ());
+//       resolve ();
+//     });
+//   })
+//   .catch ((error) => {
+//     console.log ('Post data error: ' + error);
+//   })
+//   .then (() => {
+//     res.end ();
+//   });
+// });
 
-app.post('/api/scanedResult', function (req, res) {
-  // I would check if the last rssi is smaller (the last is farther) then connect(send: 1) else nothing(send: 0)
-  var place_id = req.body.inPlace;
-  var device_id = req.body.bioWatchId;
-  var rssi = req.body.rssi;
+// app.post ('/api/scanedResult', (req, res) => {
+//   // I would check if the last rssi is smaller (the last is farther) then connect(send: 1) else nothing(send: 0)
+//   let place_id = req.body.inPlace;
+//   let device_id = req.body.bioWatchId;
+//   let rssi = req.body.rssi;
 
-  bioWatchManager.updateSpace(new BioInfo(device_id, place_id, null, rssi, null)).then(function (toConnect) {
-    res.send(toConnect);
-  }).catch(function (err) {
-    console.log('Error: ' + err);
-  }).then(function () {
-    res.end();
-  });
-});
+//   bioWatchManager.updateSpace (new BioInfo (device_id, place_id, null, rssi, null))
+//   .then ((toConnect) => {
+//     res.send (toConnect);
+//   })
+//   .catch ((err) => {
+//     console.log ('Error: ' + err);
+//   })
+//   .then (() => {
+//     res.end ();
+//   });
+// });
 
 app.get('/api/bioSignals/:bioWatchID/:startTime/:endTime', function (req, res) {
   var bioWatchID = req.params.bioWatchID;
@@ -210,29 +218,29 @@ app.get('/api/getPlaceList', function (req, res) {
 });
 
 app.post('/api/removePlace', function (req, res) {
+  var placeID = req.body.placeID;
 
-  var inPlace = req.body.inPlace;
-
-  bioWatchManager.removePlace(inPlace);
+  bioWatchManager.removePlace(placeID);
   res.end();
 });
 
 app.post('/api/removeBioWatch', function (req, res) {
+  var bioWatchID = req.body.bioWatchID;
 
-  var bioWatch = req.body.bioWatchId;
-
-  bioWatchManager.removeBioWatch(bioWatch);
+  bioWatchManager.removeBioWatch(bioWatchID);
   res.end();
 });
 
 app.post('/api/newPlace', function (req, res) {
-  var place = req.body.placeID;
-  bioWatchManager.newPlace(place);
+  var placeID = req.body.placeID;
+
+  bioWatchManager.newPlace(placeID);
   res.end();
 });
 
 app.post('/api/newBioWatch', function (req, res) {
   var bioWatch = req.body.bioWatchID;
+
   bioWatchManager.newBioWatch(bioWatch);
   res.end();
 });
