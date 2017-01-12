@@ -55,7 +55,7 @@ xbeeAPI.on ("frame_object", (frame) => {
     
 	var inPlace = IN_PLACE;
     var rssi = frame.rssi;
-    var timestamp = new Date ().getTime ();
+    var gatewayTimestamp = new Date ().getTime ();
     var signal = packageAnalyzer (frame.data);
 	
 	var bioWatchSignal = {
@@ -64,7 +64,7 @@ xbeeAPI.on ("frame_object", (frame) => {
 	  index: signal.index,
 	  pulse: signal.pulse,
 	  rssi: rssi,
-	  gatewayTimestamp: timestamp
+	  gatewayTimestamp: gatewayTimestamp
 	};
 
 	console.log (bioWatchSignal);
@@ -99,7 +99,7 @@ xbeeAPI.on ("frame_object", (frame) => {
 var packageAnalyzer = (data) => {
   var bioWatchID = data.toString ('utf-8', 0, 2);
   var index = data.readUIntBE (2, 5);
-  var pulse = data.readUIntBE (5, 1);
+  var pulse = data.readUIntBE (7, 1);
   
   return {
   	bioWatchID: bioWatchID, 
@@ -115,8 +115,8 @@ var writeToCSV = (bioWatchSignal) => {
 	  index: bioWatchSignal.index,
 	  pulse: bioWatchSignal.pulse,
 	  rssi: bioWatchSignal.rssi,
-	  timestamp: bioWatchSignal.timestamp,
-	  dateAndTime: new Date (bioWatchSignal.timestamp)
+	  gatewayTimestamp: bioWatchSignal.gatewayTimestamp,
+	  gatewayDateAndTime: new Date (bioWatchSignal.gatewayTimestamp)
 	});
 }
 
