@@ -1,6 +1,7 @@
 // Main Control from Server to BioSignalDatabase
 // maintain criteria setting, patients status and operation of the BioSignalDatabase
 let csv = require ('fast-csv');
+let fs = require ('fs');
 let Place = require ('./Place');
 let Patient = require ('./Patient');
 let BioWatch = require ('./BioWatch');
