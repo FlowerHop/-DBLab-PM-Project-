@@ -9,6 +9,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 // Main Control from Server to BioSignalDatabase
 // maintain criteria setting, patients status and operation of the BioSignalDatabase
 var csv = require('fast-csv');
+var fs = require('fs');
 var Place = require('./Place');
 var Patient = require('./Patient');
 var BioWatch = require('./BioWatch');
